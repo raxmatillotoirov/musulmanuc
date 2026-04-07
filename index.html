@@ -178,7 +178,7 @@
     <div id="main-view" class="view-content active">
         <div class="profile-wrapper">
             <div style="display:flex; align-items:center; gap:16px;">
-                <div class="avatar-circle" id="userInitial">R</div>
+                <div class="avatar-circle" id="userInitial">F</div>
                 <div>
                     <div class="user-name-text" id="userName">Foydalanuvchi</div>
                     <div class="user-id-text" id="userID">ID: Kutilyapti</div>
@@ -473,7 +473,7 @@
             </p>
         </div>
         <div class="card" style="text-align:center; padding:30px 10px;">
-            <p style="color:var(--tg-hint); margin:0 0 10px 0; font-size:15px;">Karta raqami:</p>
+            <p style="color:var(--tg-hint); margin:0 0 10px 0; font-size:15px;">Karta raqami (Uzcard/Humo):</p>
             <h2 style="margin:0 0 15px 0; letter-spacing:1.5px; color:#fff; font-size: 26px;">5614 6858 0012 0912</h2>
             <button style="background:#2c2c2e; border:none; color:#fff; padding:10px 20px; border-radius:8px; font-size:14px; margin-bottom:24px; font-weight:bold; cursor:pointer;" onclick="copyText('5614685800120912')">Nusxa olish</button>
             <button class="btn-main" onclick="window.location.href='https://t.me/MUSULMANUC'">Chekni Adminga Yuborish</button>
@@ -606,19 +606,28 @@
         let historyStack = ['main-view'];
         let timerInt;
         let cart = []; 
-        let userId = 'Noma\'lum'; 
 
-        // Bot URL orqali yuborgan balansni o'qib olish
+        // 1. URL parametrlarini o'qish (balans va ID botdan keladi)
         const urlParams = new URLSearchParams(window.location.search);
         let balance = parseInt(urlParams.get('bal')) || 0; 
+        let botUid = urlParams.get('uid'); 
+        
+        // Boshlang'ich default qiymatlar (Agar botUid kelmasa)
+        let userId = botUid || 'Noma\'lum';
+        let firstName = 'Foydalanuvchi';
 
-        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        // 2. Telegram obyektidan (telefonni o'zidan) ismni o'qishga harakat qilamiz
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             let u = tg.initDataUnsafe.user;
-            userId = u.id;
-            document.getElementById('userName').innerText = u.first_name;
-            document.getElementById('userInitial').innerText = u.first_name.charAt(0).toUpperCase();
-            document.getElementById('userID').innerText = "ID: " + userId;
+            // Agar u.id bor bo'lsa uni olamiz, yo'qsa boyagi botUid qoladi
+            userId = u.id || userId; 
+            firstName = u.first_name || firstName;
         }
+
+        // 3. Ekranga yozib qo'yish
+        document.getElementById('userName').innerText = firstName;
+        document.getElementById('userInitial').innerText = firstName.charAt(0).toUpperCase();
+        document.getElementById('userID').innerText = "ID: " + userId;
 
         function updateBal() {
             document.getElementById('user-balance').innerText = balance.toLocaleString().replace(/,/g, ' ') + " UZS";
@@ -728,15 +737,12 @@
                 document.getElementById('lb-text').innerText = `Yetishmayotgan summa: ${(totalPrice - balance).toLocaleString()} UZS`;
                 document.getElementById('low-bal-modal').style.display = 'flex';
             } else {
-                // Telegram botga ma'lumot jo'natish qismi
                 let orderData = {
                     action: "checkout",
                     pubg_id: id,
                     total_price: totalPrice,
                     cart: cart
                 };
-                
-                // Web App ma'lumotni Telegram botga yuboradi va o'zini yopadi
                 tg.sendData(JSON.stringify(orderData));
             }
         }
@@ -747,9 +753,12 @@
         function goToPaymentDisplay() {
             let amt = parseInt(document.getElementById('topup-amount').value);
             if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); return; }
-            document.getElementById('pay-exact-amount').innerText = amt.toLocaleString() + " UZS";
-            openView('payment-view');
-            startTimer(300);
+            
+            let data = {
+                action: "init_topup",
+                amount: amt
+            };
+            tg.sendData(JSON.stringify(data)); 
         }
 
         function startTimer(duration) {
