@@ -841,33 +841,38 @@
             startTimer(300);
         }
 
-        function triggerPaymentCheck() {
-            tg.showAlert("⏳ Tekshirilmoqda...");
-            
-            fetch(`${API_URL}/api/topup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: userId,
-                    amount: pendingTopupAmount
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === "success") {
-                    balance = data.new_balance;
-                    updateBal();
-                    tg.showAlert("✅ " + data.message);
-                    switchNav('history');
-                } else {
-                    tg.showAlert("⏳ So'rov yuborildi. Kutilmoqda...");
-                    switchNav('history');
-                }
-            })
-            .catch(err => {
-                tg.showAlert("🌐 Server bilan aloqa uzildi!");
-            });
+        // ===============================================
+// 6. HISOB TO'LDIRISH (API ORQALI, YOPILMAYDI)
+// ===============================================
+function triggerPaymentCheck() {
+    tg.showAlert("⏳ To'lov tekshirilmoqda... Iltimos kuting.");
+    
+    fetch(`${API_URL}/api/topup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            user_id: userId,
+            amount: pendingTopupAmount
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === "success") {
+            balance = data.new_balance;
+            updateBal();
+            // MANA SEN SO'RAGAN YOZUV:
+            tg.showAlert(`✅ To'lov qabul qilindi! ${pendingTopupAmount.toLocaleString()} so'm hisobingizga qo'shildi.`);
+            switchNav('history');
+        } else {
+            // Agar hali SMS kelmagan bo'lsa:
+            tg.showAlert("⏳ Hozircha pul tushmadi. UserBot SMS kutmoqda...\nIltimos, birozdan so'ng 'Tarix' bo'limida yana tekshirib ko'ring.");
+            switchNav('history');
         }
+    })
+    .catch(err => {
+        tg.showAlert("🌐 Server bilan aloqa uzildi!");
+    });
+}
 
         function startTimer(duration) {
             clearInterval(timerInt);
