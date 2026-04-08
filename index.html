@@ -480,32 +480,34 @@
         }
 
         // --- YANGI QISM: XARID QILGANDA BALANSDAN YECHISH ---
-        function checkoutCart() {
-            let id = document.getElementById('cart-id-input').value;
-            let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        // index.html ichidagi mantiq
+function checkoutCart() {
+    let id = document.getElementById('cart-id-input').value;
+    let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
-            if(id.length < 5) { tg.showAlert("O'yinchi ID raqamini to'g'ri kiriting!"); return; }
+    if(id.length < 5) { tg.showAlert("O'yinchi ID raqamini to'g'ri kiritmadingiz!"); return; }
 
-            if(balance < totalPrice) {
-                closeModal('cart-modal');
-                document.getElementById('lb-text').innerText = `Yetishmayotgan summa: ${(totalPrice - balance).toLocaleString()} UZS`;
-                document.getElementById('low-bal-modal').style.display = 'flex';
-            } else {
-                // Xarid bo'lgan zahoti Web App'ning o'zida balansdan pulni yechib qo'yamiz!
-                balance -= totalPrice;
-                updateBal();
-                
-                tg.showAlert("✅ Xarid muvaffaqiyatli amalga oshirildi! Balansingizdan pul yechildi. Buyurtma tayyorlanmoqda...", function() {
-                    let orderData = {
-                        action: "checkout",
-                        pubg_id: id,
-                        total_price: totalPrice,
-                        cart: cart
-                    };
-                    tg.sendData(JSON.stringify(orderData));
-                });
+    if(balance < totalPrice) {
+        tg.showAlert("Hisobingizda mablag' yetarli emas! Iltimos, oldin balansni to'ldiring.");
+    } else {
+        // Balansdan vizual yechish
+        balance -= totalPrice;
+        updateBal(); // Ekranda darhol kamayadi
+        
+        tg.showConfirm("Xaridni tasdiqlaysizmi?", function(ok) {
+            if(ok) {
+                let orderData = {
+                    action: "checkout",
+                    pubg_id: id,
+                    total_price: totalPrice,
+                    cart: cart
+                };
+                tg.sendData(JSON.stringify(orderData));
+                tg.close(); // Web App yopiladi
             }
-        }
+        });
+    }
+}
 
         function startTimer(duration) {
             clearInterval(timerInt);
