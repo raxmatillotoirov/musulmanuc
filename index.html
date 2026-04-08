@@ -169,7 +169,7 @@
             </div>
         </div>
 
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center; border-color: rgba(255,255,255,0.1);">
+        <div class="card" style="background: linear-gradient(145deg, #18181b, #27272a); display: flex; justify-content: space-between; align-items: center; border-color: rgba(255,255,255,0.1);">
             <div>
                 <p style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">Joriy balans</p>
                 <div class="bal-amount" id="user-balance">0 UZS</div>
@@ -356,7 +356,7 @@
         <div class="modal-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div style="font-size:24px; font-weight:900; color:#fff;">Savatcha</div>
-                <div onclick="clearCart()" style="color:var(--danger); font-size:13px; font-weight:800; cursor:pointer; padding:8px 14px; background:rgba(255, 69, 58, 0.15); border-radius:10px;">Bo'shatish 🗑</div>
+                <div onclick="clearCart()" style="color:var(--danger); font-size:13px; font-weight:800; cursor:pointer; padding:8px 14px; background:rgba(255, 59, 48, 0.15); border-radius:10px;">Bo'shatish 🗑</div>
             </div>
             
             <div id="cart-items-list" style="max-height: 220px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;"></div>
@@ -377,7 +377,7 @@
             
             <div style="display:flex; gap:12px;">
                 <button class="btn-secondary" style="width: 40%;" onclick="closeModal('cart-modal')">Yopish</button>
-                <button class="btn-main" style="width: 60%;" onclick="processCheckout()">Xarid qilish</button>
+                <button class="btn-main" id="checkout-btn-api" style="width: 60%;" onclick="processCheckout()">Xarid qilish</button>
             </div>
         </div>
     </div>
@@ -388,8 +388,8 @@
             <div class="ios-tab active" id="tab-h-topup" onclick="switchH('topup')">To'lovlar</div>
             <div class="ios-tab" id="tab-h-order" onclick="switchH('order')">Buyurtmalar</div>
         </div>
-        <div id="h-topup-list"><div class="card" style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-weight: 600; border: 2px dashed var(--border); background: transparent;">Hozircha to'lovlar yo'q</div></div>
-        <div id="h-order-list" style="display:none;"><div class="card" style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-weight: 600; border: 2px dashed var(--border); background: transparent;">Hozircha buyurtmalar yo'q</div></div>
+        <div id="h-topup-list"></div>
+        <div id="h-order-list" style="display:none;"></div>
     </div>
 
     <div id="settings-view" class="view-content">
@@ -485,6 +485,10 @@
     </div>
 
     <script>
+        // DIQQAT: SHU YERGA O'ZINGNING API MANZILINGNI YOZASAN!
+        // Masalan Cloudflare orqali olgan HTTPS manziling.
+        const API_URL = "https://tactics-opinions-change-hence.trycloudflare.com";
+
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor('#09090b');
@@ -495,11 +499,20 @@
         let cart = []; 
         let pendingTopupAmount = 0; 
 
-        // 1. GET DATA (URL & TELEGRAM)
+        // 1. GET DATA (URL & TELEGRAM & LOKAL XOTIRA)
         const urlParams = new URLSearchParams(window.location.search);
-        let balance = parseInt(urlParams.get('bal')) || 0; 
-        let botUid = urlParams.get('uid'); 
         
+        // Balansni birinchi lokal xotiradan qidiradi.
+        let balance = parseInt(localStorage.getItem('muc_balance')) || 0; 
+        
+        // Agar URL da kelgan summa (botdan) katta bo'lsa, o'shani haqiqiy deb qabul qiladi.
+        let url_bal = parseInt(urlParams.get('bal')) || 0;
+        if (url_bal > balance) {
+            balance = url_bal;
+            localStorage.setItem('muc_balance', balance);
+        }
+
+        let botUid = urlParams.get('uid'); 
         let userId = botUid || 'Noma\'lum';
         let firstName = 'Foydalanuvchi';
 
@@ -515,10 +528,56 @@
 
         function updateBal() {
             document.getElementById('user-balance').innerText = balance.toLocaleString().replace(/,/g, ' ') + " UZS";
+            // Yangilangan balansni doimiy xotiraga yozamiz
+            localStorage.setItem('muc_balance', balance);
         }
         updateBal();
 
-        // 2. VIEW NAVIGATION
+        // 2. TARIX (HISTORY) MANTIQI
+        function saveHistory(type, amount, detail) {
+            let hist = JSON.parse(localStorage.getItem('muc_history') || '{"topup":[], "order":[]}');
+            let date = new Date().toLocaleString('uz-UZ', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            
+            if(type === 'topup') {
+                hist.topup.unshift({amount: amount, date: date, status: detail});
+            } else {
+                hist.order.unshift({amount: amount, date: date, detail: detail});
+            }
+            
+            // Xotiraga yozamiz va ekranni yangilaymiz
+            localStorage.setItem('muc_history', JSON.stringify(hist));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            let hist = JSON.parse(localStorage.getItem('muc_history') || '{"topup":[], "order":[]}');
+            
+            let tHtml = hist.topup.map(i => `
+                <div class="card" style="padding:15px; margin-bottom:10px; border-left: 4px solid var(--success);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <span style="color:var(--text-muted); font-size:13px;">${i.date}</span>
+                        <span style="color:var(--success); font-weight:900; font-size: 16px;">+${i.amount.toLocaleString()} UZS</span>
+                    </div>
+                    <div style="font-size:14px; font-weight: 600;">Holat: <span style="color:var(--gold);">${i.status}</span></div>
+                </div>
+            `).join('');
+            
+            let oHtml = hist.order.map(i => `
+                <div class="card" style="padding:15px; margin-bottom:10px; border-left: 4px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <span style="color:var(--text-muted); font-size:13px;">${i.date}</span>
+                        <span style="color:var(--text-main); font-weight:900; font-size: 16px;">-${i.amount.toLocaleString()} UZS</span>
+                    </div>
+                    <div style="font-size:14px; font-weight: 600;">PUBG ID: <span style="color:var(--primary);">${i.detail}</span></div>
+                </div>
+            `).join('');
+
+            document.getElementById('h-topup-list').innerHTML = tHtml || `<div class="card" style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-weight: 600; border: 2px dashed var(--border); background: transparent;">To'lovlar yo'q</div>`;
+            document.getElementById('h-order-list').innerHTML = oHtml || `<div class="card" style="text-align:center; padding: 40px 20px; color:var(--text-muted); font-weight: 600; border: 2px dashed var(--border); background: transparent;">Buyurtmalar yo'q</div>`;
+        }
+        renderHistory();
+
+        // 3. VIEW NAVIGATION
         function openView(id) {
             document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -550,7 +609,7 @@
             document.getElementById('pubg-other-content').style.display = t === 'other' ? 'flex' : 'none';
         }
 
-        // 3. CART SYSTEM
+        // 4. CART SYSTEM
         function addToCart(name, price, ucAmount = 0) {
             let existing = cart.find(item => item.name === name);
             if (existing) { existing.qty++; } else { cart.push({ name: name, price: price, uc: ucAmount, qty: 1 }); }
@@ -601,7 +660,9 @@
         function openCartModal() { document.getElementById('cart-modal').classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 4. CHECKOUT (BALANSDAN YECHISH - FAQAT WEB APP)
+        // ===============================================
+        // 5. YECHISH MANTIQI (API ORQALI - YOPILMAYDI)
+        // ===============================================
         function processCheckout() {
             let id = document.getElementById('cart-id-input').value;
             let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
@@ -614,20 +675,47 @@
                 document.getElementById('low-bal-modal').classList.add('active');
                 tg.HapticFeedback.notificationOccurred('warning');
             } else {
-                // Balansdan yechishni amalga oshiramiz (vizual)
-                balance -= totalPrice;
-                updateBal();
-                
                 tg.showConfirm("Xaridni tasdiqlaysizmi? Balansingizdan pul yechiladi.", function(ok) {
                     if (ok) {
-                        tg.showAlert("✅ Xarid muvaffaqiyatli! Buyurtma tayyorlanmoqda...", function() {
-                            let orderData = { action: "checkout", pubg_id: id, total_price: totalPrice, cart: cart };
-                            tg.sendData(JSON.stringify(orderData));
+                        let btn = document.getElementById('checkout-btn-api');
+                        let originalText = btn.innerHTML;
+                        btn.innerHTML = "⏳ Kutilmoqda...";
+                        btn.style.pointerEvents = "none";
+                        
+                        // API GA SO'ROV YUBORISH (Shunda WebApp yopilmaydi)
+                        fetch(`${API_URL}/api/buy`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: userId,
+                                pubg_id: id,
+                                amount: totalPrice,
+                                item: JSON.stringify(cart)
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            btn.innerHTML = originalText;
+                            btn.style.pointerEvents = "auto";
+                            
+                            if(data.status === "success") {
+                                balance = data.new_balance; // API dan qaytgan haqiqiy balans
+                                updateBal();
+                                saveHistory('order', totalPrice, id); // Tarixga qo'shamiz
+                                clearCart(); // Savatchani tozalaymiz
+                                
+                                tg.showAlert("✅ " + data.message);
+                                switchNav('history'); // Xarid amalga oshgach tarix oynasiga o'tkazadi
+                                tg.HapticFeedback.notificationOccurred('success');
+                            } else {
+                                tg.showAlert("❌ Xatolik: " + data.message);
+                            }
+                        })
+                        .catch(err => {
+                            btn.innerHTML = originalText;
+                            btn.style.pointerEvents = "auto";
+                            tg.showAlert("🌐 Server bilan aloqa uzildi! Birozdan so'ng urining.");
                         });
-                    } else {
-                        // Tasdiqlamasa, pulni vizual qaytarib qo'yamiz
-                        balance += totalPrice;
-                        updateBal();
                     }
                 });
             }
@@ -635,7 +723,9 @@
 
         function goToTopup() { closeModal('low-bal-modal'); openView('methods-view'); }
 
-        // 5. TOPUP (WEB APP ICHIDA TO'LOV KUTISH)
+        // ===============================================
+        // 6. TO'LOV MANTIQI (API ORQALI - YOPILMAYDI)
+        // ===============================================
         function goToPaymentDisplay() {
             let amt = parseInt(document.getElementById('topup-amount').value);
             if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); tg.HapticFeedback.notificationOccurred('error'); return; }
@@ -648,9 +738,31 @@
 
         function triggerPaymentCheck() {
             tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("⏳ Mablag'lar kutilmoqda...\n\nSizning so'rovingiz qabul qilindi. To'lov tasdiqlanishi bilan pul balansingizga avtomatik qo'shiladi!", function() {
-                let data = { action: "init_topup", amount: pendingTopupAmount };
-                tg.sendData(JSON.stringify(data)); 
+            
+            fetch(`${API_URL}/api/topup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    amount: pendingTopupAmount
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    balance = data.new_balance;
+                    updateBal();
+                    saveHistory('topup', pendingTopupAmount, "Tasdiqlandi");
+                    tg.showAlert("✅ " + data.message);
+                    switchNav('history'); // Ilova yopilmaydi, tarixga o'tkazadi!
+                } else {
+                    saveHistory('topup', pendingTopupAmount, "Kutilmoqda...");
+                    tg.showAlert("⏳ " + data.message);
+                    switchNav('history'); // Ilova yopilmaydi, tarixga o'tkazadi!
+                }
+            })
+            .catch(err => {
+                tg.showAlert("🌐 Server bilan aloqa uzildi!");
             });
         }
 
