@@ -453,15 +453,56 @@
         <button class="btn-main" onclick="goToPaymentDisplay()">Davom etish</button>
     </div>
 
+    <div id="methods-view" class="view-content">
+        <div class="section-title">To'lov usuli <a href="https://t.me/MUSULMANUC" class="guide-text">Qo'llanma</a></div>
+        
+        <div class="method-btn" onclick="openView('topup-card-view')">
+            <div class="m-icon-box" style="background: rgba(10, 132, 255, 0.1); color: var(--tg-btn);">💳</div>
+            <div>
+                <h4 style="margin:0 0 4px 0; font-size:17px;">HUMO / UZCARD</h4>
+                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Avtomatik hisob to'ldirish</p>
+            </div>
+            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
+        </div>
+        
+        <div class="method-btn" onclick="openView('topup-atm-view')">
+            <div class="m-icon-box" style="background: rgba(255, 214, 10, 0.1); color: var(--gold);">🏧</div>
+            <div>
+                <h4 style="margin:0 0 4px 0; font-size:17px;">Bankomat / Naqd pul</h4>
+                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Chek yuborish orqali</p>
+            </div>
+            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
+        </div>
+
+        <div class="method-btn" onclick="topupForeign()">
+            <div class="m-icon-box" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">🌍</div>
+            <div>
+                <h4 style="margin:0 0 4px 0; font-size:17px;">Chet eldan to'ldirish</h4>
+                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Rossiya, Qozog'iston va boshqa</p>
+            </div>
+            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
+        </div>
+    </div>
+
+    <div id="topup-card-view" class="view-content">
+        <div class="section-title">HUMO / UZCARD (Avto)</div>
+        <input type="number" id="topup-amount" class="input-box" placeholder="Minimal 5 000 UZS">
+        <button class="btn-main" onclick="goToPaymentDisplay()">Davom etish</button>
+    </div>
+
     <div id="payment-view" class="view-content">
-        <div class="section-title">To'lov <a href="https://t.me/your_guide" class="guide-text">Qo'llanma</a></div>
+        <div class="section-title">To'lov <a href="https://t.me/MUSULMANUC" class="guide-text">Qo'llanma</a></div>
         <div class="alert-danger" style="text-align:center;"><div style="color:var(--danger); font-weight:bold; margin-bottom:5px;">⚠️ DIQQAT!</div>Summani tiyin-tiyinigacha to'g'ri o'tkazing!</div>
         <div class="card" style="text-align:center;"><div style="color:var(--tg-hint);margin-bottom:8px;">To'lov kutish vaqti</div><div style="font-size:40px;font-weight:800;" id="timer-display">05:00</div></div>
         <div class="card">
             <div style="display:flex;justify-content:space-between;margin-bottom:15px;"><span style="color:var(--tg-hint);">Summa:</span><span style="font-weight:700;color:var(--tg-btn); font-size: 18px;" id="pay-exact-amount">0 UZS</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--tg-hint);">Karta:</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600; font-size: 16px;">9860 1606 2621 4508</span><button style="padding:6px 10px;font-size:12px;background:#2c2c2e;color:#fff;border:none;border-radius:8px;" onclick="copyText('9860160626214508')">Nusxa</button></div></div>
         </div>
-        <button class="btn-main" style="background:var(--success);" onclick="triggerPaymentCheck()">To'lov qildim (Tekshirish)</button>
+        
+        <div style="display:flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+            <button class="btn-main" style="background:var(--success);" onclick="triggerPaymentCheck()">To'lov qildim (Tekshirish)</button>
+            <button class="btn-secondary" style="background: transparent; border: 1px solid var(--danger); color: var(--danger);" onclick="cancelTopup()">❌ Buyurtmani bekor qilish</button>
+        </div>
     </div>
 
     <div id="topup-atm-view" class="view-content">
@@ -600,305 +641,357 @@
     </div>
 
     <script>
-        // DIQQAT: SHU YERGA O'ZINGNING CLOUDFLARE YOKI API MANZILINGNI YOZASAN!
-        const API_URL = "https://tactics-opinions-change-hence.trycloudflare.com";
+    // DIQQAT: SHU YERGA O'ZINGNING CLOUDFLARE YOKI API MANZILINGNI YOZASAN!
+    const API_URL = "https://tactics-opinions-change-hence.trycloudflare.com";
 
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        let historyStack = ['main-view'];
-        let timerInt;
-        let cart = []; 
-        let pendingTopupAmount = 0; 
-        let balance = 0;
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    
+    let historyStack = ['main-view'];
+    let timerInt;
+    let cart = []; 
+    let pendingTopupAmount = 0; 
+    let balance = 0;
+    
+    // To'lov session ma'lumotlari
+    let topupSessionActive = false;
+    let sessionEndTime = 0;
 
-        // 1. GET DATA
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        balance = parseInt(localStorage.getItem('muc_balance')) || 0; 
-        let url_bal = parseInt(urlParams.get('bal')) || 0;
-        if (url_bal > balance) {
-            balance = url_bal;
-            localStorage.setItem('muc_balance', balance);
-        }
+    // 1. GET DATA
+    const urlParams = new URLSearchParams(window.location.search);
+    balance = parseInt(localStorage.getItem('muc_balance')) || 0; 
+    
+    let botUid = urlParams.get('uid'); 
+    let userId = botUid || 'Noma\'lum';
+    let firstName = 'Foydalanuvchi';
+    let uUsername = 'Mijoz';
 
-        let botUid = urlParams.get('uid'); 
-        let userId = botUid || 'Noma\'lum';
-        let firstName = 'Foydalanuvchi';
-        let uUsername = 'Mijoz';
+    if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        let u = tg.initDataUnsafe.user;
+        userId = u.id || userId; 
+        firstName = u.first_name || firstName;
+        uUsername = u.username || uUsername;
+    }
 
-        if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            let u = tg.initDataUnsafe.user;
-            userId = u.id || userId; 
-            firstName = u.first_name || firstName;
-            uUsername = u.username || uUsername;
-        }
+    document.getElementById('userName').innerText = firstName;
+    document.getElementById('userInitial').innerText = firstName.charAt(0).toUpperCase();
+    document.getElementById('userID').innerText = "ID: " + userId;
 
-        document.getElementById('userName').innerText = firstName;
-        document.getElementById('userInitial').innerText = firstName.charAt(0).toUpperCase();
-        document.getElementById('userID').innerText = "ID: " + userId;
+    function updateBal() {
+        document.getElementById('user-balance').innerText = balance.toLocaleString().replace(/,/g, ' ') + " UZS";
+        localStorage.setItem('muc_balance', balance);
+    }
 
-        function updateBal() {
-            document.getElementById('user-balance').innerText = balance.toLocaleString().replace(/,/g, ' ') + " UZS";
-            localStorage.setItem('muc_balance', balance);
-        }
-
-        // ===============================================
-        // 2. API ORQALI TARIX VA BALANSNI YANGILASH
-        // ===============================================
-        function syncData() {
-            fetch(`${API_URL}/api/sync/${userId}`)
-            .then(res => res.json())
-            .then(data => {
-                balance = data.balance;
-                updateBal();
-                renderServerHistory(data.topups, data.orders);
-            }).catch(err => console.log(err));
-        }
-        syncData(); // Ilova ochilganda bir marta chaqiramiz
-
-        function renderServerHistory(topups, orders) {
-            const getStatusTxt = (s, isTopup) => {
-                if(s === 'waiting') return '<span style="color:var(--gold);">Jarayonda ⏳</span>';
-                if(s === 'completed') return '<span style="color:var(--success);">UC tushirildi ✅</span>';
-                if(s === 'paid') return isTopup ? '<span style="color:var(--success);">Tasdiqlandi ✅</span>' : '<span style="color:var(--gold);">Jarayonda ⏳</span>';
-                if(s === 'cancelled' || s === 'timeout') return '<span style="color:var(--danger);">Bekor qilindi ❌</span>';
-                return `<span style="color:var(--tg-hint);">${s}</span>`;
-            };
-
-            let tHtml = topups.map(i => `
-                <div class="card" style="padding:15px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="color:var(--tg-hint); font-size:13px;">To'lov</span>
-                        <span style="color:var(--success); font-weight:900; font-size: 16px;">+${i.amount.toLocaleString()} UZS</span>
-                    </div>
-                    <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, true)}</div>
-                </div>
-            `).join('');
-
-            let oHtml = orders.map(i => `
-                <div class="card" style="padding:15px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="color:var(--tg-text); font-size:14px; font-weight:bold;">PUBG ID: ${i.pubg_id}</span>
-                        <span style="color:var(--tg-text); font-weight:900; font-size: 16px;">-${i.amount.toLocaleString()} UZS</span>
-                    </div>
-                    <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, false)}</div>
-                </div>
-            `).join('');
-
-            document.getElementById('h-topup-list').innerHTML = tHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">To'lovlar yo'q</div>`;
-            document.getElementById('h-order-list').innerHTML = oHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">Buyurtmalar yo'q</div>`;
-        }
-
-        // ===============================================
-        // 3. NAVIGATSIYA
-        // ===============================================
-        function openView(id) {
-            document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id !== 'main-view') { historyStack.push(id); tg.BackButton.show(); }
-        }
-
-        function switchNav(tabId) {
-            openView(tabId + '-view');
-            document.querySelectorAll('.nav-icon-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-' + tabId).classList.add('active');
-            historyStack = [tabId + '-view']; tg.BackButton.hide();
-            syncData(); // Har gal boshqa menyuga o'tganda yangilaydi
-        }
-
-        tg.BackButton.onClick(() => {
-            if(historyStack.length > 1) {
-                let curr = historyStack.pop();
-                if(curr === 'payment-view') clearInterval(timerInt);
-                let prev = historyStack[historyStack.length - 1];
-                document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
-                document.getElementById(prev).classList.add('active');
-                if(historyStack.length === 1) tg.BackButton.hide();
+    // ===============================================
+    // 2. API ORQALI TARIX VA FAOL SESSIYANI TEKSHIRISH
+    // ===============================================
+    function syncData() {
+        fetch(`${API_URL}/api/sync/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            balance = data.balance;
+            updateBal();
+            renderServerHistory(data.topups, data.orders);
+            
+            // AGAR FAOL TO'LOV KUTILAYOTGAN BO'LSA
+            if(data.active_topup) {
+                pendingTopupAmount = data.active_topup.amount;
+                resumePaymentSession(pendingTopupAmount);
             }
-        });
+        }).catch(err => console.log(err));
+    }
+    syncData(); 
 
-        function switchPubgTab(t) {
-            document.querySelectorAll('#pubg-view .ios-tab').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + t).classList.add('active');
-            document.getElementById('pubg-uc-content').style.display = t === 'uc' ? 'grid' : 'none';
-            document.getElementById('pubg-other-content').style.display = t === 'other' ? 'flex' : 'none';
+    function renderServerHistory(topups, orders) {
+        // Oldingi tarix funksiyasi o'zgarishsiz...
+        const getStatusTxt = (s, isTopup) => {
+            if(s === 'waiting') return '<span style="color:var(--gold);">Jarayonda ⏳</span>';
+            if(s === 'completed') return '<span style="color:var(--success);">UC tushirildi ✅</span>';
+            if(s === 'paid') return isTopup ? '<span style="color:var(--success);">Tasdiqlandi ✅</span>' : '<span style="color:var(--gold);">Jarayonda ⏳</span>';
+            if(s === 'cancelled' || s === 'timeout') return '<span style="color:var(--danger);">Bekor qilindi ❌</span>';
+            return `<span style="color:var(--tg-hint);">${s}</span>`;
+        };
+
+        let tHtml = topups.map(i => `
+            <div class="card" style="padding:15px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                    <span style="color:var(--tg-hint); font-size:13px;">To'lov</span>
+                    <span style="color:var(--success); font-weight:900; font-size: 16px;">+${i.amount.toLocaleString()} UZS</span>
+                </div>
+                <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, true)}</div>
+            </div>
+        `).join('');
+
+        let oHtml = orders.map(i => `
+            <div class="card" style="padding:15px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                    <span style="color:var(--tg-text); font-size:14px; font-weight:bold;">PUBG ID: ${i.pubg_id}</span>
+                    <span style="color:var(--tg-text); font-weight:900; font-size: 16px;">-${i.amount.toLocaleString()} UZS</span>
+                </div>
+                <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, false)}</div>
+            </div>
+        `).join('');
+
+        document.getElementById('h-topup-list').innerHTML = tHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">To'lovlar yo'q</div>`;
+        document.getElementById('h-order-list').innerHTML = oHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">Buyurtmalar yo'q</div>`;
+    }
+
+    // ===============================================
+    // 3. NAVIGATSIYA
+    // ===============================================
+    function openView(id) {
+        document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id !== 'main-view' && id !== 'payment-view') { historyStack.push(id); tg.BackButton.show(); }
+        if(id === 'payment-view') tg.BackButton.hide(); // To'lov oynasidan orqaga qaytib bo'lmaydi!
+    }
+
+    function switchNav(tabId) {
+        // Agar faol sessiya bo'lsa, boshqa sahifaga o'tkazmaydi!
+        if(topupSessionActive && tabId !== 'payment') {
+            tg.showAlert("Sizda tugallanmagan to'lov so'rovi bor. Iltimos uni yakunlang yoki bekor qiling.");
+            return;
         }
+        
+        openView(tabId + '-view');
+        document.querySelectorAll('.nav-icon-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-' + tabId).classList.add('active');
+        historyStack = [tabId + '-view']; tg.BackButton.hide();
+        syncData(); 
+    }
 
-        // ===============================================
-        // 4. SAVATCHA (CART)
-        // ===============================================
-        function addToCart(name, price, ucAmount) {
-            let existing = cart.find(item => item.name === name);
-            if (existing) { existing.qty++; } else { cart.push({ name: name, price: price, uc: ucAmount, qty: 1 }); }
-            updateCartUI();
-            tg.HapticFeedback.impactOccurred('light');
+    tg.BackButton.onClick(() => {
+        if(historyStack.length > 1) {
+            let curr = historyStack.pop();
+            let prev = historyStack[historyStack.length - 1];
+            document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(prev).classList.add('active');
+            if(historyStack.length === 1) tg.BackButton.hide();
         }
+    });
 
-        function updateCartUI() {
-            let fab = document.getElementById('cart-fab');
-            let totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
-            let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-            let totalUC = cart.reduce((acc, item) => acc + (item.uc * item.qty), 0);
-            
-            document.getElementById('cart-total-count').innerText = totalCount;
-            document.getElementById('cart-total-price').innerHTML = totalPrice.toLocaleString() + " <span style='font-size: 14px;'>UZS</span>";
-            document.getElementById('cart-total-uc').innerHTML = totalUC.toLocaleString() + " <span style='font-size: 14px;'>UC</span>";
-            
-            if (totalCount > 0) fab.classList.add('show');
-            else fab.classList.remove('show');
+    function switchPubgTab(t) {
+        document.querySelectorAll('#pubg-view .ios-tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + t).classList.add('active');
+        document.getElementById('pubg-uc-content').style.display = t === 'uc' ? 'grid' : 'none';
+        document.getElementById('pubg-other-content').style.display = t === 'other' ? 'flex' : 'none';
+    }
 
-            let list = document.getElementById('cart-items-list');
-            list.innerHTML = "";
-            cart.forEach((item, index) => {
-                list.innerHTML += `
-                    <div class="cart-item">
-                        <div>
-                            <div style="font-weight:700; font-size:16px;">${item.name}</div>
-                            <div style="font-size:13px; color:var(--tg-hint); margin-top:2px;">${item.price.toLocaleString()} UZS</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <button class="cart-qty-btn" onclick="changeQty(${index}, -1)">-</button>
-                            <span style="font-weight:bold; font-size:16px; width:20px; text-align:center;">${item.qty}</span>
-                            <button class="cart-qty-btn" onclick="changeQty(${index}, 1)">+</button>
-                        </div>
+    // ===============================================
+    // 4. SAVATCHA (CART) va XARID
+    // ===============================================
+    // (Cart funksiyalari o'zgarishsiz, yuqoridagi html koddan qoladi... addToCart, updateCartUI, changeQty, clearCart, openCartModal)
+    function addToCart(name, price, ucAmount) {
+        let existing = cart.find(item => item.name === name);
+        if (existing) { existing.qty++; } else { cart.push({ name: name, price: price, uc: ucAmount, qty: 1 }); }
+        updateCartUI();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function updateCartUI() {
+        let fab = document.getElementById('cart-fab');
+        let totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
+        let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        let totalUC = cart.reduce((acc, item) => acc + (item.uc * item.qty), 0);
+        
+        document.getElementById('cart-total-count').innerText = totalCount;
+        document.getElementById('cart-total-price').innerHTML = totalPrice.toLocaleString() + " <span style='font-size: 14px;'>UZS</span>";
+        document.getElementById('cart-total-uc').innerHTML = totalUC.toLocaleString() + " <span style='font-size: 14px;'>UC</span>";
+        
+        if (totalCount > 0) fab.classList.add('show');
+        else fab.classList.remove('show');
+
+        let list = document.getElementById('cart-items-list');
+        list.innerHTML = "";
+        cart.forEach((item, index) => {
+            list.innerHTML += `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight:700; font-size:16px;">${item.name}</div>
+                        <div style="font-size:13px; color:var(--tg-hint); margin-top:2px;">${item.price.toLocaleString()} UZS</div>
                     </div>
-                `;
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <button class="cart-qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                        <span style="font-weight:bold; font-size:16px; width:20px; text-align:center;">${item.qty}</span>
+                        <button class="cart-qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function changeQty(index, delta) { cart[index].qty += delta; if (cart[index].qty <= 0) cart.splice(index, 1); updateCartUI(); if (cart.length === 0) closeModal('cart-modal'); }
+    function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); tg.showAlert("Savatcha bo'shatildi! 🗑"); }
+    function openCartModal() { document.getElementById('cart-modal').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function goToTopup() { closeModal('low-bal-modal'); switchNav('topup'); }
+
+    function processCheckout() {
+        let id = document.getElementById('cart-id-input').value;
+        let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+        if(id.length < 5) { tg.showAlert("O'yinchi ID raqamini to'g'ri kiriting!"); return; }
+
+        if(balance < totalPrice) {
+            closeModal('cart-modal');
+            document.getElementById('lb-text').innerText = `Yetishmayotgan summa: ${(totalPrice - balance).toLocaleString()} UZS`;
+            document.getElementById('low-bal-modal').style.display = 'flex';
+        } else {
+            tg.showConfirm("Xaridni tasdiqlaysizmi? Balansingizdan pul yechiladi.", function(ok) {
+                if (ok) {
+                    tg.showAlert("⏳ Kutilmoqda...");
+                    
+                    fetch(`${API_URL}/api/buy`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            username: uUsername,
+                            pubg_id: id,
+                            amount: totalPrice,
+                            item: JSON.stringify(cart)
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.status === "success") {
+                            balance = data.new_balance;
+                            updateBal();
+                            clearCart();
+                            tg.showAlert("✅ Xarid muvaffaqiyatli! UC tez orada tushadi.");
+                            switchNav('history'); 
+                        } else {
+                            tg.showAlert("❌ Xatolik: " + data.message);
+                        }
+                    })
+                    .catch(err => { tg.showAlert("🌐 Server bilan aloqa uzildi!"); });
+                }
             });
         }
+    }
 
-        function changeQty(index, delta) {
-            cart[index].qty += delta;
-            if (cart[index].qty <= 0) cart.splice(index, 1);
-            updateCartUI();
-            if (cart.length === 0) closeModal('cart-modal');
-        }
-
-        function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); tg.showAlert("Savatcha bo'shatildi! 🗑"); }
-        function openCartModal() { document.getElementById('cart-modal').style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function goToTopup() { closeModal('low-bal-modal'); openView('methods-view'); }
-
-        // ===============================================
-        // 5. XARID QILISH (API ORQALI, YOPILMAYDI)
-        // ===============================================
-        function processCheckout() {
-            let id = document.getElementById('cart-id-input').value;
-            let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-
-            if(id.length < 5) { tg.showAlert("O'yinchi ID raqamini to'g'ri kiriting!"); return; }
-
-            if(balance < totalPrice) {
-                closeModal('cart-modal');
-                document.getElementById('lb-text').innerText = `Yetishmayotgan summa: ${(totalPrice - balance).toLocaleString()} UZS`;
-                document.getElementById('low-bal-modal').style.display = 'flex';
+    // ===============================================
+    // 5. TO'LOV MANTIQI (YANGILANGAN QAT'IY MANTIQ)
+    // ===============================================
+    function goToPaymentDisplay() {
+        let amt = parseInt(document.getElementById('topup-amount').value);
+        if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); return; }
+        
+        // Agar faol so'rov bo'lmasa, serverga so'rov yuboramiz
+        tg.showAlert("⏳ So'rov yaratilmoqda...");
+        
+        fetch(`${API_URL}/api/init_topup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, amount: amt })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") {
+                pendingTopupAmount = amt; 
+                resumePaymentSession(amt);
             } else {
-                tg.showConfirm("Xaridni tasdiqlaysizmi? Balansingizdan pul yechiladi.", function(ok) {
-                    if (ok) {
-                        tg.showAlert("⏳ Kutilmoqda...");
-                        
-                        fetch(`${API_URL}/api/buy`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                user_id: userId,
-                                username: uUsername,
-                                pubg_id: id,
-                                amount: totalPrice,
-                                item: JSON.stringify(cart)
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.status === "success") {
-                                balance = data.new_balance;
-                                updateBal();
-                                clearCart();
-                                tg.showAlert("✅ Xarid muvaffaqiyatli! UC tez orada tushadi.");
-                                switchNav('history'); // Ilova yopilmaydi, tarixga o'tadi
-                            } else {
-                                tg.showAlert("❌ Xatolik: " + data.message);
-                            }
-                        })
-                        .catch(err => {
-                            tg.showAlert("🌐 Server bilan aloqa uzildi!");
-                        });
-                    }
+                tg.showAlert("❌ " + data.message);
+                if(data.message.includes("faol")) syncData(); // Faolini tortib keladi
+            }
+        })
+        .catch(err => { tg.showAlert("🌐 Server xatosi!"); });
+    }
+
+    function resumePaymentSession(amt) {
+        document.getElementById('pay-exact-amount').innerText = amt.toLocaleString() + " UZS";
+        topupSessionActive = true;
+        openView('payment-view');
+        
+        // Localstorage'dan vaqtni o'qiymiz, yo'q bo'lsa yangi 5 daqiqa beramiz
+        let savedEndTime = localStorage.getItem('muc_timer_end');
+        let now = Math.floor(Date.now() / 1000);
+        
+        if(savedEndTime && savedEndTime > now) {
+            sessionEndTime = savedEndTime;
+        } else {
+            sessionEndTime = now + 300; // +5 min
+            localStorage.setItem('muc_timer_end', sessionEndTime);
+        }
+        
+        startTimer();
+    }
+
+    // Qat'iy tekshirish
+    function triggerPaymentCheck() {
+        tg.showAlert(`⏳ ${pendingTopupAmount.toLocaleString()} so'm tekshirilmoqda...`);
+        
+        fetch(`${API_URL}/api/topup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, amount: pendingTopupAmount })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") {
+                balance = data.new_balance;
+                updateBal();
+                clearSession();
+                tg.showAlert("✅ " + data.message);
+                switchNav('history');
+            } else {
+                tg.showAlert("⏳ " + data.message);
+            }
+        })
+        .catch(err => { tg.showAlert("🌐 Server xatosi!"); });
+    }
+
+    function cancelTopup() {
+        tg.showConfirm("So'rovni bekor qilasizmi?", function(ok) {
+            if(ok) {
+                fetch(`${API_URL}/api/cancel_topup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    clearSession();
+                    tg.showAlert("❌ To'lov so'rovi bekor qilindi.");
+                    document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+                    document.getElementById('main-view').classList.add('active');
                 });
             }
-        }
+        });
+    }
 
-        // ===============================================
-        // 6. HISOB TO'LDIRISH (API ORQALI, YOPILMAYDI)
-        // ===============================================
-        function goToPaymentDisplay() {
-            let amt = parseInt(document.getElementById('topup-amount').value);
-            if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); return; }
+    function startTimer() {
+        clearInterval(timerInt);
+        let d = document.getElementById('timer-display');
+        
+        timerInt = setInterval(() => {
+            let now = Math.floor(Date.now() / 1000);
+            let t = sessionEndTime - now;
             
-            pendingTopupAmount = amt; 
-            document.getElementById('pay-exact-amount').innerText = amt.toLocaleString() + " UZS";
-            openView('payment-view');
-            startTimer(300);
-        }
+            if(t <= 0) { 
+                clearInterval(timerInt); 
+                d.textContent = "00:00";
+                tg.showAlert("⏳ Vaqt tugadi! So'rov avtomatik bekor qilinadi.", () => {
+                    cancelTopup(); // Vaqt tugasa ham backendga bekor qilindi deb yuboramiz
+                });
+                return;
+            }
+            
+            let m = parseInt(t/60,10), s = parseInt(t%60,10);
+            d.textContent = (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
+        }, 1000);
+    }
 
-        // ===============================================
-// 6. HISOB TO'LDIRISH (API ORQALI, YOPILMAYDI)
-// ===============================================
-function triggerPaymentCheck() {
-    tg.showAlert("⏳ To'lov tekshirilmoqda... Iltimos kuting.");
-    
-    fetch(`${API_URL}/api/topup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            user_id: userId,
-            amount: pendingTopupAmount
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.status === "success") {
-            balance = data.new_balance;
-            updateBal();
-            // MANA SEN SO'RAGAN YOZUV:
-            tg.showAlert(`✅ To'lov qabul qilindi! ${pendingTopupAmount.toLocaleString()} so'm hisobingizga qo'shildi.`);
-            switchNav('history');
-        } else {
-            // Agar hali SMS kelmagan bo'lsa:
-            tg.showAlert("⏳ Hozircha pul tushmadi. UserBot SMS kutmoqda...\nIltimos, birozdan so'ng 'Tarix' bo'limida yana tekshirib ko'ring.");
-            switchNav('history');
-        }
-    })
-    .catch(err => {
-        tg.showAlert("🌐 Server bilan aloqa uzildi!");
-    });
-}
+    function clearSession() {
+        clearInterval(timerInt);
+        topupSessionActive = false;
+        localStorage.removeItem('muc_timer_end');
+    }
 
-        function startTimer(duration) {
-            clearInterval(timerInt);
-            let t = duration, d = document.getElementById('timer-display');
-            timerInt = setInterval(() => {
-                let m = parseInt(t/60,10), s = parseInt(t%60,10);
-                d.textContent = (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
-                if(--t < 0) { clearInterval(timerInt); tg.showAlert("Vaqt tugadi!"); tg.BackButton.onClick(); }
-            }, 1000);
-        }
-
-        function topupForeign() { window.location.href = `https://t.me/MUSULMANUC?text=` + encodeURIComponent("Chetdan hisobimni to'ldirmoqchi edim karta bering."); }
-        function switchH(t) {
-            document.getElementById('tab-h-topup').classList.toggle('active', t === 'topup');
-            document.getElementById('tab-h-order').classList.toggle('active', t === 'order');
-            document.getElementById('h-topup-list').style.display = t === 'topup' ? 'block' : 'none';
-            document.getElementById('h-order-list').style.display = t === 'order' ? 'block' : 'none';
-        }
-        function getRefLink() { return `https://t.me/MUSULMANUCBOT?start=ref_${userId}`; }
-        function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.showAlert("Referal silka nusxalandi!\nDo'stlaringizga yuboring va keshbek ishlang."); }); }
-        function shareRefLink() {
-            let text = encodeURIComponent("Eng arzon PUBG UC va Prime xizmatlari! Menga qo'shil va bonus ol:");
-            let url = encodeURIComponent(getRefLink());
-            tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`);
-        }
-        function copyText(txt) { navigator.clipboard.writeText(txt).then(() => tg.showAlert("Nusxalandi!")); }
-    </script>
-</body>
-</html>
+    function topupForeign() { window.location.href = `https://t.me/MUSULMANUC?text=` + encodeURIComponent("Chetdan hisobimni to'ldirmoqchi edim karta bering."); }
+    function switchH(t) { document.getElementById('tab-h-topup').classList.toggle('active', t === 'topup'); document.getElementById('tab-h-order').classList.toggle('active', t === 'order'); document.getElementById('h-topup-list').style.display = t === 'topup' ? 'block' : 'none'; document.getElementById('h-order-list').style.display = t === 'order' ? 'block' : 'none'; }
+    function getRefLink() { return `https://t.me/MUSULMANUCBOT?start=ref_${userId}`; }
+    function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.showAlert("Referal silka nusxalandi!\nDo'stlaringizga yuboring va keshbek ishlang."); }); }
+    function shareRefLink() { let text = encodeURIComponent("Eng arzon PUBG UC va Prime xizmatlari! Menga qo'shil va bonus ol:"); let url = encodeURIComponent(getRefLink()); tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`); }
+    function copyText(txt) { navigator.clipboard.writeText(txt).then(() => tg.showAlert("Nusxalandi!")); }
+</script>
