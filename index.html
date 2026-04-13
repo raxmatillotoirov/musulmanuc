@@ -186,11 +186,11 @@
     <div class="custom-popup-bg" id="confirm-modal">
         <div class="custom-popup-card">
             <div style="font-size: 60px; margin-bottom: 10px;">❓</div>
-            <h3 style="margin: 0 0 10px 0; color: #fff; font-size: 22px;">Diqqat!</h3>
+            <h3 id="confirm-title" style="margin: 0 0 10px 0; color: #fff; font-size: 22px;">Diqqat!</h3>
             <p id="confirm-text" style="color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Haqiqatan ham ushbu amalni bajarasizmi?</p>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-secondary" onclick="closeConfirm(false)">Yo'q</button>
-                <button class="btn-main" style="background: var(--danger);" onclick="closeConfirm(true)">Ha, bekor qilish</button>
+                <button class="btn-secondary" id="confirm-btn-no" onclick="closeConfirm(false)">Yo'q</button>
+                <button class="btn-main" id="confirm-btn-yes" onclick="closeConfirm(true)">Ha</button>
             </div>
         </div>
     </div>
@@ -664,7 +664,20 @@
     }
 
     function closePopup() { document.getElementById('alert-modal').style.display = 'none'; if(popupCallback) popupCallback(); }
-    function showConfirm(text, callback) { document.getElementById('confirm-text').innerText = text; document.getElementById('confirm-modal').style.display = 'flex'; tg.HapticFeedback.impactOccurred('medium'); confirmCb = callback; }
+    function showConfirm(title, text, yesText, yesColor, noText, callback) { 
+        document.getElementById('confirm-title').innerText = title;
+        document.getElementById('confirm-text').innerText = text; 
+        
+        let btnYes = document.getElementById('confirm-btn-yes');
+        btnYes.innerText = yesText;
+        btnYes.style.background = yesColor;
+        
+        document.getElementById('confirm-btn-no').innerText = noText;
+        
+        document.getElementById('confirm-modal').style.display = 'flex'; 
+        tg.HapticFeedback.impactOccurred('medium'); 
+        confirmCb = callback; 
+    }
     function closeConfirm(res) { document.getElementById('confirm-modal').style.display = 'none'; if(confirmCb) confirmCb(res); }
     function showToast(msg) { let t = document.createElement('div'); t.className = 'toast-msg'; t.innerText = msg; document.body.appendChild(t); tg.HapticFeedback.impactOccurred('light'); setTimeout(() => { t.style.animation = "fadeOutUp 0.3s forwards"; setTimeout(() => t.remove(), 300); }, 2000); }
     // -------------------------
@@ -831,9 +844,17 @@
 
         if(balance < totalPrice) {
             closeModal('cart-modal');
-            showPopup('error', "Mablag' yetarli emas", `Xarid uchun ${(totalPrice - balance).toLocaleString()} UZS yetishmayapti.`);
+            let diff = totalPrice - balance;
+            showConfirm("Mablag' yetarli emas!", `Xaridni amalga oshirish uchun hisobingizda ${diff.toLocaleString()} UZS yetishmayapti.\n\nHisobingizni to'ldirasizmi?`, "To'ldirish", "var(--tg-btn)", "Keyinroq", function(ok) {
+                if(ok) {
+                    switchNav('main'); 
+                    openView('methods-view'); // To'lov usullariga eltadi
+                } else {
+                    switchNav('main'); // Bosh sahifaga qaytadi
+                }
+            });
         } else {
-            showConfirm(`Xaridni tasdiqlaysizmi?\nBalansingizdan ${totalPrice.toLocaleString()} UZS yechiladi.`, function(ok) {
+            showConfirm("Xaridni tasdiqlash", `Balansingizdan ${totalPrice.toLocaleString()} UZS yechiladi. Xaridni tasdiqlaysizmi?`, "Ha, tasdiqlash", "var(--success)", "Yo'q", function(ok) {
                 if (ok) {
                     showPopup('loading', 'Kuting...', 'So\'rov qayta ishlanmoqda...');
                     fetch(`${API_URL}/api/buy`, {
@@ -921,7 +942,7 @@
     }
 
     function cancelTopup() {
-        showConfirm("Ushbu to'lov so'rovini bekor qilasizmi?", function(ok) {
+        showConfirm("Bekor qilish", "Ushbu to'lov so'rovini haqiqatan ham bekor qilasizmi?", "Ha, bekor qilish", "var(--danger)", "Yo'q", function(ok) {
             if(ok) {
                 showPopup('loading', 'Kuting...', 'Bekor qilinmoqda...');
                 fetch(`${API_URL}/api/cancel_topup`, {
@@ -944,7 +965,14 @@
             
             if(t <= 0) { 
                 clearInterval(timerInt); d.textContent = "00:00";
-                showPopup('warning', 'Vaqt tugadi', 'Berilgan vaqt tugadi. So\'rov avtomatik bekor qilindi.', () => { cancelTopup(); });
+                showPopup('loading', 'Kuting...', "Vaqt tugadi, bekor qilinmoqda...");
+                fetch(`${API_URL}/api/cancel_topup`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                }).then(res => res.json()).then(data => {
+                    closePopup(); clearSession(); syncData();
+                    showPopup('warning', 'Vaqt tugadi', "Berilgan vaqt tugadi. So'rov avtomatik bekor qilindi.", () => { switchNav('main'); });
+                });
                 return;
             }
             let m = parseInt(t/60,10), s = parseInt(t%60,10);
