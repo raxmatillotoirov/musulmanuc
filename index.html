@@ -32,7 +32,7 @@
             margin: 0; 
             padding: 16px; 
             padding-bottom: 100px; 
-            user-select: none; 
+            user-select: none;  
         }
 
         .card { background: var(--tg-card); border-radius: 16px; padding: 18px; margin-bottom: 16px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
@@ -417,43 +417,6 @@
     </div>
 
     <div id="methods-view" class="view-content">
-        <div class="section-title">To'lov usuli <a href="https://t.me/your_guide" class="guide-text">Qo'llanma</a></div>
-        
-        <div class="method-btn" onclick="openView('topup-card-view')">
-            <div class="m-icon-box" style="background: rgba(10, 132, 255, 0.1); color: var(--tg-btn);">💳</div>
-            <div>
-                <h4 style="margin:0 0 4px 0; font-size:17px;">HUMO / UZCARD</h4>
-                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Avtomatik hisob to'ldirish</p>
-            </div>
-            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
-        </div>
-        
-        <div class="method-btn" onclick="openView('topup-atm-view')">
-            <div class="m-icon-box" style="background: rgba(255, 214, 10, 0.1); color: var(--gold);">🏧</div>
-            <div>
-                <h4 style="margin:0 0 4px 0; font-size:17px;">Bankomat / Naqd pul</h4>
-                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Chek yuborish orqali</p>
-            </div>
-            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
-        </div>
-
-        <div class="method-btn" onclick="topupForeign()">
-            <div class="m-icon-box" style="background: rgba(50, 215, 75, 0.1); color: var(--success);">🌍</div>
-            <div>
-                <h4 style="margin:0 0 4px 0; font-size:17px;">Chet eldan to'ldirish</h4>
-                <p style="margin:0; font-size:14px; color:var(--tg-hint);">Rossiya, Qozog'iston va boshqa</p>
-            </div>
-            <div style="margin-left:auto; color:var(--tg-hint); font-size:18px;">❯</div>
-        </div>
-    </div>
-
-    <div id="topup-card-view" class="view-content">
-        <div class="section-title">HUMO / UZCARD (Avto)</div>
-        <input type="number" id="topup-amount" class="input-box" placeholder="Minimal 5 000 UZS">
-        <button class="btn-main" onclick="goToPaymentDisplay()">Davom etish</button>
-    </div>
-
-    <div id="methods-view" class="view-content">
         <div class="section-title">To'lov usuli <a href="https://t.me/MUSULMANUC" class="guide-text">Qo'llanma</a></div>
         
         <div class="method-btn" onclick="openView('topup-card-view')">
@@ -615,12 +578,12 @@
 
             <div style="display:flex; justify-content:space-around; background:#2c2c2e; padding:18px; border-radius:14px; margin-bottom:24px;">
                 <div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--tg-text);">0</div>
+                    <div style="font-size:24px; font-weight:bold; color:var(--tg-text);" id="ref-count-display">0</div>
                     <div style="font-size:13px; color:var(--tg-hint); margin-top: 4px;">Chaqirilganlar</div>
                 </div>
                 <div style="width:1px; background:var(--border);"></div>
                 <div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--gold);">0 UZS</div>
+                    <div style="font-size:24px; font-weight:bold; color:var(--gold);" id="ref-cashback-display">0 UZS</div>
                     <div style="font-size:13px; color:var(--tg-hint); margin-top: 4px;">Ishlangan Keshbek</div>
                 </div>
             </div>
@@ -805,7 +768,7 @@
     }
 
     function changeQty(index, delta) { cart[index].qty += delta; if (cart[index].qty <= 0) cart.splice(index, 1); updateCartUI(); if (cart.length === 0) closeModal('cart-modal'); }
-    function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); tg.showAlert("Savatcha bo'shatildi! 🗑"); }
+    function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); }
     function openCartModal() { document.getElementById('cart-modal').style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function goToTopup() { closeModal('low-bal-modal'); switchNav('main'); openView('methods-view'); }
@@ -914,7 +877,7 @@
                     body: JSON.stringify({ user_id: userId })
                 }).then(res => res.json()).then(data => {
                     clearSession(); syncData();
-                    tg.showAlert("❌ Buyurtma bekor qilindi.", () => { switchNav('main'); });
+                    switchNav('main'); 
                 });
             }
         });
@@ -929,7 +892,7 @@
             
             if(t <= 0) { 
                 clearInterval(timerInt); d.textContent = "00:00";
-                tg.showAlert("⏳ Vaqt tugadi! So'rov avtomatik bekor qilinadi.", () => { cancelTopup(); });
+                cancelTopup(); 
                 return;
             }
             let m = parseInt(t/60,10), s = parseInt(t%60,10);
@@ -941,13 +904,15 @@
     function topupForeign() { window.location.href = `https://t.me/MUSULMANUC?text=` + encodeURIComponent("Chetdan hisobimni to'ldirmoqchi edim karta bering."); }
     function switchH(t) { document.getElementById('tab-h-topup').classList.toggle('active', t === 'topup'); document.getElementById('tab-h-order').classList.toggle('active', t === 'order'); document.getElementById('h-topup-list').style.display = t === 'topup' ? 'block' : 'none'; document.getElementById('h-order-list').style.display = t === 'order' ? 'block' : 'none'; }
     function getRefLink() { return `https://t.me/MUSULMANUCBOT?start=ref_${userId}`; }
-    function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.showAlert("Referal silka nusxalandi!\nDo'stlaringizga yuboring va keshbek ishlang."); }); }
+    function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.HapticFeedback.notificationOccurred('success'); }); }
     function shareRefLink() { let text = encodeURIComponent("Eng arzon PUBG UC! Menga qo'shil va bonus ol:"); let url = encodeURIComponent(getRefLink()); tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`); }
     
-    // KARTA NUSXALASH
+    // KARTA NUSXALASH (Faqat vibratsiya)
     function copyText(txt) { 
         navigator.clipboard.writeText(txt).then(() => { 
             tg.HapticFeedback.notificationOccurred('success'); 
         }); 
     }
 </script>
+</body>
+</html>
