@@ -943,7 +943,7 @@
 
     function cancelTopup(isAuto = false) {
         if(isAuto) {
-            // Agar vaqt tugab o'zi yopayotgan bo'lsa (so'rab o'tirmaydi)
+            // Taymer o'zi yopsa (so'rab o'tirmaydi)
             showPopup('loading', 'Kuting...', 'Vaqt tugadi, bekor qilinmoqda...');
             fetch(`${API_URL}/api/cancel_topup`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -953,19 +953,26 @@
                 showPopup('warning', 'Vaqt tugadi', "Berilgan 5 daqiqa o'tdi. So'rov avtomatik bekor qilindi.", () => { switchNav('main'); });
             });
         } else {
-            // Mijoz o'zi "Bekor qilish" tugmasini bossa (tasdiq so'raydi)
-            showConfirm("Ushbu to'lov so'rovini bekor qilasizmi?", function(ok) {
-                if(ok) {
-                    showPopup('loading', 'Kuting...', 'Bekor qilinmoqda...');
-                    fetch(`${API_URL}/api/cancel_topup`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: userId })
-                    }).then(res => res.json()).then(data => {
-                        closePopup(); clearSession(); syncData();
-                        showPopup('error', 'Bekor qilindi', "To'lov so'rovingiz bekor qilindi.", () => { switchNav('main'); });
-                    });
+            // Mijoz o'zi "Bekor qilish"ni bossa (YANGI 6 TA PARAMETRLI SO'ROV)
+            showConfirm(
+                "Bekor qilish", 
+                "Ushbu to'lov so'rovini haqiqatan ham bekor qilasizmi?", 
+                "Ha, bekor qilish", 
+                "var(--danger)", 
+                "Yo'q", 
+                function(ok) {
+                    if(ok) {
+                        showPopup('loading', 'Kuting...', 'Bekor qilinmoqda...');
+                        fetch(`${API_URL}/api/cancel_topup`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: userId })
+                        }).then(res => res.json()).then(data => {
+                            closePopup(); clearSession(); syncData();
+                            showPopup('error', 'Bekor qilindi', "To'lov so'rovingiz bekor qilindi.", () => { switchNav('main'); });
+                        });
+                    }
                 }
-            });
+            );
         }
     }
 
