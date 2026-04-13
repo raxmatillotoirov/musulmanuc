@@ -10,7 +10,7 @@
            1. ASOSIY CSS (PREMIUM DARK)
            ========================================= */
         :root {
-            --tg-bg: #000000;         
+            --tg-bg: #050505;         
             --tg-card: #1c1c1e; 
             --tg-btn: #0a84ff;       
             --tg-text: #ffffff;         
@@ -23,9 +23,12 @@
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* BOSH FON UCHUN GRADIENT */
+        /* BOSH FON UCHUN GRADIENT VA GLASSMORPHISM NURI */
         body { 
-            background: radial-gradient(circle at top left, #161c2d 0%, #000000 100%);
+            background-color: var(--tg-bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(10, 132, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(94, 92, 230, 0.15) 0%, transparent 40%);
             background-attachment: fixed;
             color: var(--tg-text); 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; 
@@ -35,28 +38,47 @@
             user-select: none;  
         }
 
-        .card { background: var(--tg-card); border-radius: 16px; padding: 18px; margin-bottom: 16px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* YOP-YANGI PREMIUM KARTA (BALANS UCHUN) */
+        .premium-glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-glass-card::before {
+            content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px;
+            background: var(--tg-btn); filter: blur(60px); opacity: 0.4; border-radius: 50%; z-index: 0;
+        }
+        .pg-content { position: relative; z-index: 1; }
+        .pg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .pg-title { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-topup-mini { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s;}
+        .btn-topup-mini:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
+        .pg-balance { font-size: 38px; font-weight: 900; color: #fff; margin-bottom: 20px; text-shadow: 0 4px 15px rgba(0,0,0,0.3); letter-spacing: -1px;}
+        .pg-user { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .pg-avatar { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #0a84ff, #5e5ce6); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: #fff; box-shadow: 0 4px 12px rgba(10,132,255,0.3);}
+        .pg-user-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px;}
+        .pg-user-id { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
+
+        .card { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(10px); border-radius: 16px; padding: 18px; margin-bottom: 16px; position: relative; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .section-title { font-size: 22px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.3px; }
 
         .guide-text { font-size: 14px; color: var(--gold); text-decoration: none; font-weight: 600; cursor: pointer; }
 
-        .input-box { width: 100%; background: #2c2c2e; border: 1px solid transparent; color: var(--tg-text); padding: 16px; border-radius: 12px; font-size: 16px; outline: none; margin-bottom: 12px; transition: 0.2s; }
+        .input-box { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: var(--tg-text); padding: 16px; border-radius: 12px; font-size: 16px; outline: none; margin-bottom: 12px; transition: 0.2s; }
         .input-box::placeholder { color: var(--tg-hint); }
-        .input-box:focus { border-color: var(--tg-btn); background: #3a3a3c; }
+        .input-box:focus { border-color: var(--tg-btn); box-shadow: 0 0 10px rgba(10,132,255,0.2); }
         
         .btn-main { width: 100%; background: var(--tg-btn); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 17px; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-main:active { transform: scale(0.97); opacity: 0.8; }
-        .btn-secondary { width: 100%; background: #3a3a3c; color: var(--tg-text); border: none; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 17px; cursor: pointer; transition: 0.1s; }
-        .btn-secondary:active { transform: scale(0.97); background: #48484a; }
-
-        /* =========================================
-           2. PROFIL
-           ========================================= */
-        .profile-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: linear-gradient(145deg, #222224, #1c1c1e); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .avatar-circle { width: 56px; height: 56px; background: linear-gradient(135deg, #0a84ff, #5e5ce6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; color: #fff; }
-        .user-name-text { font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-        .user-id-text { font-size: 14px; color: var(--tg-hint); font-weight: 500; }
-        .bal-amount { font-size: 20px; font-weight: 800; color: var(--gold); text-align: right; margin-top: 4px; }
+        .btn-secondary { width: 100%; background: rgba(255,255,255,0.1); color: var(--tg-text); border: none; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 17px; cursor: pointer; transition: 0.1s; }
+        .btn-secondary:active { transform: scale(0.97); background: rgba(255,255,255,0.2); }
 
         /* RASMLI KARTA CSS (PUBG) */
         .game-card { position: relative; width: 100%; height: 160px; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.15s; margin-bottom: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.4); background-color: var(--tg-card); border: 1px solid rgba(255,255,255,0.05);}
@@ -65,42 +87,28 @@
         .game-card-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); padding: 30px 16px 16px 16px; display: flex; justify-content: space-between; align-items: flex-end; }
 
         /* Tablar & Grid */
-        .ios-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .ios-tabs { display: flex; gap: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .ios-tab { font-weight: 600; font-size: 16px; color: var(--tg-hint); padding-bottom: 12px; cursor: pointer; position: relative; transition: 0.2s; }
         .ios-tab.active { color: var(--tg-btn); }
         .ios-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: var(--tg-btn); border-radius: 3px 3px 0 0; }
 
         .uc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .uc-item { background: var(--tg-card); border-radius: 16px; padding: 18px 10px; text-align: center; cursor: pointer; transition: 0.1s; border: 1px solid transparent; position: relative; }
-        .uc-item:active { background: #2c2c2e; transform: scale(0.96); }
+        .uc-item { background: rgba(28,28,30,0.6); backdrop-filter: blur(10px); border-radius: 16px; padding: 18px 10px; text-align: center; cursor: pointer; transition: 0.1s; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .uc-item:active { background: rgba(255,255,255,0.1); transform: scale(0.96); }
         .uc-price-val { font-size: 14px; color: var(--gold); font-weight: 600; margin-top: 4px;}
         
-        /* =========================================
-           PRIME VA PRIME PLUS KARTALARI
-           ========================================= */
+        /* PRIME VA PRIME PLUS KARTALARI */
         .prime-list { display: flex; flex-direction: column; gap: 12px; }
-        
-        /* UMUMIY USLUB PRIME PLUS VA YANGI PRIME UCHUN */
-        .prime-plus-card { background: linear-gradient(145deg, #222224, #1c1c1e); border: 1px solid rgba(255, 214, 10, 0.2); border-radius: 16px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
-        .prime-plus-card:active { transform: scale(0.98); background: #2c2c2e; border-color: var(--gold); }
+        .prime-plus-card { background: rgba(28,28,30,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 214, 10, 0.2); border-radius: 16px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+        .prime-plus-card:active { transform: scale(0.98); background: rgba(255,255,255,0.1); border-color: var(--gold); }
         .prime-plus-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
-        
-        /* Ikonkalar qutisi */
         .plus-icon { width: 44px; height: 44px; background: rgba(255, 214, 10, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: 12px; }
-        
-        /* Prime uchun ko'kroq ikona foni */
         .prime-icon-bg { background: rgba(10, 132, 255, 0.15); color: var(--tg-btn); }
-
         .prime-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px; }
         .prime-price { font-size: 15px; font-weight: 700; color: var(--gold); }
-        
-        /* Ma'lumotlar qutisi */
         .prime-details-box { font-size: 13px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.03); }
 
-        /* MODALLAR VA SAVATCHA */
-        .modal-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
-        .modal-card { background: var(--tg-card); width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; border: 1px solid var(--border); }
-        
+        /* SAVATCHA FAB */
         #cart-fab { position: fixed; bottom: 85px; right: 20px; background: var(--tg-btn); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4); cursor: pointer; z-index: 900; transition: 0.3s; transform: scale(0); }
         #cart-fab.show { transform: scale(1); }
         #cart-fab .fab-count { position: absolute; top: 0; right: 0; background: var(--danger); color: white; font-size: 12px; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -109,8 +117,7 @@
         .cart-item:last-child { border-bottom: none; }
         .cart-qty-btn { background: #2c2c2e; color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-weight: bold; cursor: pointer;}
         .cart-qty-btn:active { background: #3a3a3c; }
-
-        .cart-summary { display: flex; background: #2c2c2e; border-radius: 14px; padding: 16px; margin-bottom: 20px; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .cart-summary { display: flex; background: rgba(0,0,0,0.3); border-radius: 14px; padding: 16px; margin-bottom: 20px; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
         .summary-block { display: flex; flex-direction: column; width: 48%; }
         .summary-label { font-size: 12px; color: var(--tg-hint); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .summary-uc { font-size: 20px; font-weight: 800; color: #0a84ff; }
@@ -118,20 +125,21 @@
         .summary-divider { width: 1px; background: rgba(255,255,255,0.1); height: 40px; }
 
         /* TO'LOV MA'LUMOTLARI */
-        .method-btn { background: linear-gradient(145deg, #222224, #1c1c1e); padding: 18px; border-radius: 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .method-btn:active { transform: scale(0.97); background: #2c2c2e; }
+        .method-btn { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(10px); padding: 18px; border-radius: 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .method-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
         .m-icon-box { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        
         .alert-danger { background: rgba(255, 69, 58, 0.15); border: 1px solid rgba(255, 69, 58, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
 
         /* SOZLAMALAR/PANEL */
         .list-group { display: flex; flex-direction: column; gap: 14px; }
-        .panel-item { background: linear-gradient(145deg, #222224, #1c1c1e); border-radius: 16px; display: flex; align-items: center; padding: 18px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .panel-item:active { transform: scale(0.97); background: #2c2c2e; }
+        .panel-item { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(10px); border-radius: 16px; display: flex; align-items: center; padding: 18px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .panel-item:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
         .panel-icon-box { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px; }
         .panel-text-main { font-size: 18px; font-weight: 700; color: var(--tg-text); margin-bottom: 4px; letter-spacing: 0.3px; }
         .panel-text-sub { font-size: 14px; color: var(--tg-hint); line-height: 1.3; font-weight: 500;}
 
-        /* YANGI YARQIRAGAN IJTIMOIY TARMOQ KARTALARI */
+        /* IJTIMOIY TARMOQ KARTALARI */
         .social-card { display: flex; align-items: center; border-radius: 16px; padding: 16px; margin-bottom: 12px; text-decoration: none; color: white; transition: 0.2s; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
         .social-card:active { transform: scale(0.96); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .social-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; margin-right: 16px; }
@@ -152,12 +160,38 @@
         .view-content { display: none; }
         .view-content.active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .h-status { font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: rgba(255, 214, 10, 0.1); color: var(--gold); }
+
+        /* ================= PREMIUM MODALS ENGINE ================= */
+        .custom-popup-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 99999; }
+        .custom-popup-card { background: rgba(30, 30, 32, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 340px; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.6); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes fadeDown { from { top: -30px; opacity: 0; } to { top: 25px; opacity: 1; } }
+        @keyframes fadeOutUp { from { top: 25px; opacity: 1; } to { top: -30px; opacity: 0; } }
+        .toast-msg { position: fixed; left: 50%; transform: translateX(-50%); background: rgba(50, 215, 75, 0.95); backdrop-filter: blur(5px); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 700; font-size: 14px; z-index: 100000; box-shadow: 0 8px 20px rgba(50,215,75,0.3); animation: fadeDown 0.3s forwards; }
     </style>
 </head>
 <body>
 
+    <div class="custom-popup-bg" id="alert-modal">
+        <div class="custom-popup-card">
+            <div id="alert-icon" style="font-size: 60px; margin-bottom: 10px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));">✅</div>
+            <h3 id="alert-title" style="margin: 0 0 10px 0; color: #fff; font-size: 22px;">Sarlavha</h3>
+            <p id="alert-text" style="color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Matn</p>
+            <button class="btn-main" id="alert-btn" onclick="closePopup()">Tushunarli</button>
+        </div>
+    </div>
+
+    <div class="custom-popup-bg" id="confirm-modal">
+        <div class="custom-popup-card">
+            <div style="font-size: 60px; margin-bottom: 10px;">❓</div>
+            <h3 style="margin: 0 0 10px 0; color: #fff; font-size: 22px;">Diqqat!</h3>
+            <p id="confirm-text" style="color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Haqiqatan ham ushbu amalni bajarasizmi?</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-secondary" onclick="closeConfirm(false)">Yo'q</button>
+                <button class="btn-main" style="background: var(--danger);" onclick="closeConfirm(true)">Ha, bekor qilish</button>
+            </div>
+        </div>
+    </div>
     <div id="cart-fab" onclick="openCartModal()">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         <div class="fab-count" id="cart-total-count">0</div>
@@ -176,34 +210,34 @@
     </div>
 
     <div id="main-view" class="view-content active">
-        <div class="profile-wrapper">
-            <div style="display:flex; align-items:center; gap:16px;">
-                <div class="avatar-circle" id="userInitial">R</div>
-                <div>
-                    <div class="user-name-text" id="userName">Foydalanuvchi</div>
-                    <div class="user-id-text" id="userID">ID: Kutilyapti</div>
+        <div class="premium-glass-card">
+            <div class="pg-content">
+                <div class="pg-header">
+                    <span class="pg-title">Joriy Balans</span>
+                    <button class="btn-topup-mini" onclick="openView('methods-view')">To'ldirish ➕</button>
+                </div>
+                <div class="pg-balance" id="user-balance">0 UZS</div>
+                
+                <div class="pg-user">
+                    <div class="pg-avatar" id="userInitial">F</div>
+                    <div>
+                        <div class="pg-user-name" id="userName">Foydalanuvchi</div>
+                        <div class="pg-user-id" id="userID">ID: Kutilyapti</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="padding: 18px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:16px; color:var(--tg-hint); font-weight:600;">Joriy balans:</span>
-                <span class="bal-amount" id="user-balance">0 UZS</span>
-            </div>
-            <button class="btn-main" style="margin-top: 16px;" onclick="openView('methods-view')">Hisob to'ldirish</button>
-        </div>
-
-        <div class="section-title">O'yinlar</div>
+        <div class="section-title" style="font-size: 18px; margin-top: 10px;">Xizmatlar katalogi</div>
         
         <div class="game-card" onclick="openView('pubg-view')">
             <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/578080/capsule_616x353.jpg" alt="PUBG Mobile">
             <div class="game-card-overlay">
                 <div>
-                    <h4 style="margin:0 0 4px 0; font-size:18px; color:#ffffff;">PUBG Mobile</h4>
-                    <p style="margin:0; font-size:13px; color:var(--tg-hint);">UC va Prime xizmatlari</p>
+                    <h4 style="margin:0 0 4px 0; font-size:20px; color:#ffffff; font-weight: 800;">PUBG Mobile</h4>
+                    <p style="margin:0; font-size:13px; color:rgba(255,255,255,0.7);">UC va Prime xizmatlari</p>
                 </div>
-                <div style="color:var(--tg-hint); font-size:20px; font-weight:bold;">❯</div>
+                <div style="color:var(--tg-btn); background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size:18px; font-weight:bold;">❯</div>
             </div>
         </div>
     </div>
@@ -291,7 +325,7 @@
                 </div>
             </div>
 
-            <div class="prime-plus-card" onclick="addToCart('Prime 1 Yil', 155000, 1800)">
+            <div class="prime-plus-card" onclick="addToCart('Prime 1 Yil', 155000, 1695)">
                 <div class="prime-plus-header">
                     <div style="display:flex; align-items:center;">
                         <div class="plus-icon prime-icon-bg">🛡</div>
@@ -303,8 +337,8 @@
                     <div class="prime-price">155 000 UZS</div>
                 </div>
                 <div class="prime-details-box">
-                    <div style="margin-bottom: 6px; line-height: 1.4;">💰 Xarid qilinganda <strong style="color: #fff;">720 UC</strong> tushadi va <strong style="color: #fff;">365 kun</strong> davomida kunlik 3 UC dan beriladi.</div>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">1800 UC</strong></div>
+                    <div style="margin-bottom: 6px; line-height: 1.4;">💰 Xarid qilinganda <strong style="color: #fff;">600 UC</strong> tushadi va <strong style="color: #fff;">365 kun</strong> davomida kunlik 3 UC dan beriladi.</div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">1695 UC</strong></div>
                 </div>
             </div>
 
@@ -328,7 +362,7 @@
                 </div>
             </div>
 
-            <div class="prime-plus-card" onclick="addToCart('Prime Plus 3 Oy', 355000, 2700)">
+            <div class="prime-plus-card" onclick="addToCart('Prime Plus 3 Oy', 355000, 4320)">
                 <div class="prime-plus-header">
                     <div style="display:flex; align-items:center;">
                         <div class="plus-icon">👑</div>
@@ -342,11 +376,11 @@
                 <div class="prime-details-box">
                     <div style="margin-bottom: 6px;">🌟 RP ochko: <strong style="color: #fff;">900</strong></div>
                     <div style="margin-bottom: 6px; line-height: 1.4;">💰 Xarid qilinganda <strong style="color: #fff;">1980 UC</strong> tushadi va <strong style="color: #fff;">90 kun</strong> davomida 8 UC dan beriladi.</div>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">2700 UC</strong></div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">4320 UC</strong></div>
                 </div>
             </div>
 
-            <div class="prime-plus-card" onclick="addToCart('Prime Plus 6 Oy', 707000, 5400)">
+            <div class="prime-plus-card" onclick="addToCart('Prime Plus 6 Oy', 707000, 8640)">
                 <div class="prime-plus-header">
                     <div style="display:flex; align-items:center;">
                         <div class="plus-icon">👑</div>
@@ -360,11 +394,11 @@
                 <div class="prime-details-box">
                     <div style="margin-bottom: 6px;">🌟 RP ochko: <strong style="color: #fff;">1800</strong></div>
                     <div style="margin-bottom: 6px; line-height: 1.4;">💰 Xarid qilinganda <strong style="color: #fff;">3960 UC</strong> tushadi va <strong style="color: #fff;">180 kun</strong> davomida 8 UC dan beriladi.</div>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">5400 UC</strong></div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">8640 UC</strong></div>
                 </div>
             </div>
 
-            <div class="prime-plus-card" onclick="addToCart('Prime Plus 1 Yil', 1390000, 10840)">
+            <div class="prime-plus-card" onclick="addToCart('Prime Plus 1 Yil', 1390000, 17280)">
                 <div class="prime-plus-header">
                     <div style="display:flex; align-items:center;">
                         <div class="plus-icon">👑</div>
@@ -376,17 +410,17 @@
                     <div class="prime-price">1 390 000 UZS</div>
                 </div>
                 <div class="prime-details-box">
-                    <div style="margin-bottom: 6px;">🌟 RP ochko: <strong style="color: #fff;">3600</strong></div>
+                    <div style="margin-bottom: 6px;">🌟 RP ochko: <strong style="color: #fff;">36000</strong></div>
                     <div style="margin-bottom: 6px; line-height: 1.4;">💰 Xarid qilinganda <strong style="color: #fff;">7920 UC</strong> tushadi va <strong style="color: #fff;">365 kun</strong> davomida 8 UC dan beriladi.</div>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">10800 UC</strong></div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">🎁 Jami: <strong style="color: var(--gold); font-size: 15px;">17280 UC</strong></div>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <div class="modal-bg" id="cart-modal">
-        <div class="modal-card">
+    <div class="custom-popup-bg" id="cart-modal" style="z-index: 100000;">
+        <div class="modal-card" style="background: rgba(28,28,30,0.95); backdrop-filter: blur(20px);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <div style="font-size:22px; font-weight:800; color:var(--tg-btn);">Savatcha</div>
                 <div onclick="clearCart()" style="color:var(--danger); font-size:13px; font-weight:700; cursor:pointer; padding:6px 12px; background:rgba(255, 69, 58, 0.1); border-radius:8px;">Bo'shatish 🗑</div>
@@ -459,7 +493,7 @@
         <div class="card" style="text-align:center;"><div style="color:var(--tg-hint);margin-bottom:8px;">To'lov kutish vaqti</div><div style="font-size:40px;font-weight:800;" id="timer-display">05:00</div></div>
         <div class="card">
             <div style="display:flex;justify-content:space-between;margin-bottom:15px;"><span style="color:var(--tg-hint);">Summa:</span><span style="font-weight:700;color:var(--tg-btn); font-size: 18px;" id="pay-exact-amount">0 UZS</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--tg-hint);">Karta:</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600; font-size: 16px;">9860 1606 2621 4508</span><button style="padding:6px 10px;font-size:12px;background:#2c2c2e;color:#fff;border:none;border-radius:8px;" onclick="copyText('9860160626214508')">Nusxa</button></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--tg-hint);">Karta:</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600; font-size: 16px;">9860 1606 2621 4508</span><button style="padding:6px 10px;font-size:12px;background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;" onclick="copyText('9860160626214508')">Nusxa</button></div></div>
         </div>
         
         <div style="display:flex; flex-direction: column; gap: 12px; margin-top: 10px;">
@@ -479,7 +513,7 @@
         <div class="card" style="text-align:center; padding:30px 10px;">
             <p style="color:var(--tg-hint); margin:0 0 10px 0; font-size:15px;">Karta raqami (Uzcard/Humo):</p>
             <h2 style="margin:0 0 15px 0; letter-spacing:1.5px; color:#fff; font-size: 26px;">9860 1606 2621 4508</h2>
-            <button style="background:#2c2c2e; border:none; color:#fff; padding:10px 20px; border-radius:8px; font-size:14px; margin-bottom:24px; font-weight:bold; cursor:pointer;" onclick="copyText('9860160626214508')">Nusxa olish</button>
+            <button style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:10px 20px; border-radius:8px; font-size:14px; margin-bottom:24px; font-weight:bold; cursor:pointer;" onclick="copyText('9860160626214508')">Nusxa olish</button>
             <button class="btn-main" onclick="window.location.href='https://t.me/MUSULMANUC'">Chekni Adminga Yuborish</button>
         </div>
     </div>
@@ -495,8 +529,16 @@
     </div>
 
     <div id="settings-view" class="view-content">
-        <div class="section-title">Profil</div>
+        <div class="section-title">Profil va Sozlamalar</div>
         <div class="list-group">
+            <div class="panel-item" onclick="openView('referral-view')">
+                <div class="panel-icon-box" style="background: rgba(255, 214, 10, 0.1); color: var(--gold);">🎁</div>
+                <div style="flex:1;">
+                    <div class="panel-text-main">Referal tizimi</div>
+                    <div class="panel-text-sub" style="color:var(--gold);">Har bir xariddan 0.5% keshbek oling</div>
+                </div>
+                <div style="color:var(--tg-hint); font-size: 18px;">❯</div>
+            </div>
             
             <div class="panel-item" onclick="window.location.href='https://t.me/MUSULMANUC'">
                 <div class="panel-icon-box" style="background: rgba(10, 132, 255, 0.1); color: var(--tg-btn);">🎧</div>
@@ -506,18 +548,9 @@
                 </div>
                 <div style="color:var(--tg-hint); font-size: 18px;">❯</div>
             </div>
-            
-            <div class="panel-item" onclick="openView('referral-view')">
-                <div class="panel-icon-box" style="background: rgba(255, 214, 10, 0.1); color: var(--gold);">🎁</div>
-                <div style="flex:1;">
-                    <div class="panel-text-main">Referal tizimi</div>
-                    <div class="panel-text-sub" style="color:var(--gold);">Har bir xariddan 0.5% keshbek oling</div>
-                </div>
-                <div style="color:var(--tg-hint); font-size: 18px;">❯</div>
-            </div>
         </div>
 
-        <div class="section-title" style="margin-top: 24px; font-size: 15px; text-transform: uppercase; color: var(--tg-hint); letter-spacing: 0.5px;">Bizni rasmiy ijtimoiy tarmoqlar orqali kuzating</div>
+        <div class="section-title" style="margin-top: 24px; font-size: 15px; text-transform: uppercase; color: var(--tg-hint); letter-spacing: 0.5px;">Bizni ijtimoiy tarmoqlarda kuzating</div>
         
         <a href="https://t.me/musulman4e_pubg" target="_blank" class="social-card sc-card-tg">
             <div class="social-icon">
@@ -564,42 +597,27 @@
 
     <div id="referral-view" class="view-content">
         <div class="section-title">Referal tizimi</div>
-        
-        <div class="card" style="text-align:center; padding: 25px 15px;">
-            <div style="font-size:55px; margin-bottom:10px;">🎁</div>
+        <div class="card" style="text-align:center; padding: 25px 15px; border: 1px solid rgba(255, 214, 10, 0.3); background: linear-gradient(145deg, rgba(255, 214, 10, 0.05), transparent);">
+            <div style="font-size:55px; margin-bottom:10px; filter: drop-shadow(0 0 15px rgba(255,214,10,0.5));">🎁</div>
             <h3 style="margin:0 0 10px 0; font-size: 22px;">Do'stlarni taklif qiling!</h3>
             <p style="color:var(--tg-hint); font-size:15px; line-height:1.5; margin:0 0 20px 0;">
-                Har bir taklif qilgan do'stingizning xarididan <b>0.5% keshbek</b> oling.
+                Sizning havolangiz orqali qo'shilgan do'stingizning xaridi <b>tasdiqlanishi bilan</b> uning savdosidan <b>0.5% keshbek</b> avtomatik balansingizga qo'shiladi!
             </p>
             
-            <div style="background: rgba(50, 215, 75, 0.1); border: 1px solid rgba(50, 215, 75, 0.3); padding: 14px; border-radius: 12px; margin-bottom: 20px;">
-                <span style="color:var(--success); font-size:14px; font-weight:600;">✅ Keshbek avtomatik hisobingizga qo'shiladi!</span>
-            </div>
-
-            <div style="display:flex; justify-content:space-around; background:#2c2c2e; padding:18px; border-radius:14px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-around; background:rgba(0,0,0,0.4); padding:20px; border-radius:18px; margin-bottom:24px; border: 1px solid rgba(255,255,255,0.05);">
                 <div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--tg-text);" id="ref-count-display">0</div>
-                    <div style="font-size:13px; color:var(--tg-hint); margin-top: 4px;">Chaqirilganlar</div>
+                    <div style="font-size:28px; font-weight:900; color:#fff;" id="ref-count-display">0</div>
+                    <div style="font-size:12px; color:var(--tg-hint); margin-top: 4px; text-transform: uppercase;">Do'stlar</div>
                 </div>
-                <div style="width:1px; background:var(--border);"></div>
+                <div style="width:1px; background:rgba(255,255,255,0.1);"></div>
                 <div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--gold);" id="ref-cashback-display">0 UZS</div>
-                    <div style="font-size:13px; color:var(--tg-hint); margin-top: 4px;">Ishlangan Keshbek</div>
+                    <div style="font-size:28px; font-weight:900; color:var(--gold);" id="ref-cashback-display">0 UZS</div>
+                    <div style="font-size:12px; color:var(--tg-hint); margin-top: 4px; text-transform: uppercase;">Ishlangan</div>
                 </div>
             </div>
             
             <button class="btn-main" style="margin-bottom:12px;" onclick="copyRefLink()">Silkani nusxalash</button>
-            <button class="btn-secondary" onclick="shareRefLink()">Do'stlarga yuborish</button>
-        </div>
-    </div>
-
-    <div class="modal-bg" id="low-bal-modal">
-        <div class="modal-card" style="text-align:center;">
-            <div style="font-size:44px; margin-bottom:15px;">💳</div>
-            <div style="font-size:20px; font-weight:700; margin-bottom:10px;">Mablag' yetarli emas!</div>
-            <p style="font-size:15px; color:var(--tg-hint); margin-bottom:24px;" id="lb-text">Hisobingizni to'ldiring.</p>
-            <button class="btn-main" onclick="goToTopup()">Hozir to'ldirish</button>
-            <button class="btn-secondary" style="margin-top:12px;" onclick="closeModal('low-bal-modal')">Keyinroq</button>
+            <button class="btn-secondary" style="background: rgba(255,255,255,0.1);" onclick="shareRefLink()">Do'stlarga yuborish</button>
         </div>
     </div>
 
@@ -618,6 +636,36 @@
     
     let topupSessionActive = false;
     let sessionEndTime = 0;
+
+    // ----- POPUPS ENGINE -----
+    let popupCallback = null;
+    let confirmCb = null;
+
+    function showPopup(type, title, text, callback = null) {
+        let icon = "ℹ️"; let btnColor = "var(--tg-btn)";
+        if(type === 'success') { icon = "✅"; btnColor = "var(--success)"; }
+        if(type === 'error') { icon = "❌"; btnColor = "var(--danger)"; }
+        if(type === 'warning') { icon = "⚠️"; btnColor = "var(--gold)"; }
+        if(type === 'loading') icon = "⏳";
+
+        document.getElementById('alert-icon').innerText = icon;
+        document.getElementById('alert-title').innerText = title;
+        document.getElementById('alert-text').innerText = text;
+        
+        let btn = document.getElementById('alert-btn');
+        btn.style.background = btnColor;
+        btn.style.display = (type === 'loading') ? 'none' : 'block';
+
+        document.getElementById('alert-modal').style.display = 'flex';
+        tg.HapticFeedback.notificationOccurred(type === 'error' ? 'error' : (type === 'success' ? 'success' : 'warning'));
+        popupCallback = callback;
+    }
+
+    function closePopup() { document.getElementById('alert-modal').style.display = 'none'; if(popupCallback) popupCallback(); }
+    function showConfirm(text, callback) { document.getElementById('confirm-text').innerText = text; document.getElementById('confirm-modal').style.display = 'flex'; tg.HapticFeedback.impactOccurred('medium'); confirmCb = callback; }
+    function closeConfirm(res) { document.getElementById('confirm-modal').style.display = 'none'; if(confirmCb) confirmCb(res); }
+    function showToast(msg) { let t = document.createElement('div'); t.className = 'toast-msg'; t.innerText = msg; document.body.appendChild(t); tg.HapticFeedback.impactOccurred('light'); setTimeout(() => { t.style.animation = "fadeOutUp 0.3s forwards"; setTimeout(() => t.remove(), 300); }, 2000); }
+    // -------------------------
 
     const urlParams = new URLSearchParams(window.location.search);
     let botUid = urlParams.get('uid'); 
@@ -650,7 +698,7 @@
             
             if(document.getElementById('ref-count-display')) {
                 document.getElementById('ref-count-display').innerText = data.ref_count || 0;
-                document.getElementById('ref-cashback-display').innerText = (data.total_cashback || 0) + " UZS";
+                document.getElementById('ref-cashback-display').innerText = (data.total_cashback || 0).toLocaleString() + " UZS";
             }
             
             if(data.active_topup) {
@@ -671,7 +719,7 @@
         };
 
         let tHtml = topups.map(i => `
-            <div class="card" style="padding:15px; margin-bottom:10px;">
+            <div class="card" style="padding:15px; margin-bottom:10px; border-left: 3px solid var(--success);">
                 <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
                     <span style="color:var(--tg-hint); font-size:13px;">To'lov</span>
                     <span style="color:var(--success); font-weight:900; font-size: 16px;">+${i.amount.toLocaleString()} UZS</span>
@@ -680,7 +728,7 @@
             </div>`).join('');
 
         let oHtml = orders.map(i => `
-            <div class="card" style="padding:15px; margin-bottom:10px;">
+            <div class="card" style="padding:15px; margin-bottom:10px; border-left: 3px solid var(--tg-btn);">
                 <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
                     <span style="color:var(--tg-text); font-size:14px; font-weight:bold;">PUBG ID: ${i.pubg_id}</span>
                     <span style="color:var(--tg-text); font-weight:900; font-size: 16px;">-${i.amount.toLocaleString()} UZS</span>
@@ -701,7 +749,7 @@
 
     function switchNav(tabId) {
         if(topupSessionActive && tabId !== 'payment') {
-            tg.showAlert("Sizda tugallanmagan to'lov so'rovi bor. Iltimos, uni yakunlang yoki bekor qiling.");
+            showPopup('warning', "Tugallanmagan To'lov!", "Sizda kutilayotgan to'lov so'rovi bor. Iltimos uni yakunlang yoki bekor qiling.");
             return;
         }
         openView(tabId + '-view');
@@ -768,7 +816,7 @@
     }
 
     function changeQty(index, delta) { cart[index].qty += delta; if (cart[index].qty <= 0) cart.splice(index, 1); updateCartUI(); if (cart.length === 0) closeModal('cart-modal'); }
-    function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); }
+    function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); showToast("Savatcha tozalandi 🗑"); }
     function openCartModal() { document.getElementById('cart-modal').style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function goToTopup() { closeModal('low-bal-modal'); switchNav('main'); openView('methods-view'); }
@@ -777,25 +825,26 @@
         let id = document.getElementById('cart-id-input').value;
         let totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
-        if(id.length < 5) { tg.showAlert("O'yinchi ID raqamini to'g'ri kiriting!"); return; }
+        if(id.length < 5) { showPopup('warning', 'Xatolik', "O'yinchi ID raqamini to'g'ri kiriting!"); return; }
 
         if(balance < totalPrice) {
             closeModal('cart-modal');
-            document.getElementById('lb-text').innerText = `Yetishmayotgan summa: ${(totalPrice - balance).toLocaleString()} UZS`;
-            document.getElementById('low-bal-modal').style.display = 'flex';
+            showPopup('error', "Mablag' yetarli emas", `Xarid uchun ${(totalPrice - balance).toLocaleString()} UZS yetishmayapti.`);
         } else {
-            tg.showConfirm("Xaridni tasdiqlaysizmi? Balansingizdan pul yechiladi.", function(ok) {
+            showConfirm(`Xaridni tasdiqlaysizmi?\nBalansingizdan ${totalPrice.toLocaleString()} UZS yechiladi.`, function(ok) {
                 if (ok) {
+                    showPopup('loading', 'Kuting...', 'So\'rov qayta ishlanmoqda...');
                     fetch(`${API_URL}/api/buy`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user_id: userId, username: uUsername, pubg_id: id, amount: totalPrice, item: JSON.stringify(cart) })
                     }).then(res => res.json()).then(data => {
+                        closePopup();
                         if(data.status === "success") {
                             balance = data.new_balance; updateBal(); clearCart();
-                            tg.showAlert("✅ Xarid muvaffaqiyatli! UC tez orada tushadi.", () => { switchNav('history'); });
-                        } else { tg.showAlert("❌ Xatolik: " + data.message); }
-                    }).catch(err => { tg.showAlert("🌐 Server bilan aloqa uzildi!"); });
+                            showPopup('success', 'Muvaffaqiyatli!', "Xarid qabul qilindi. UC tez orada tushadi.", () => { switchNav('history'); });
+                        } else { showPopup('error', 'Xatolik', data.message); }
+                    }).catch(err => { closePopup(); showPopup('error', 'Server xatosi', 'Server bilan ulanish uzildi.'); });
                 }
             });
         }
@@ -806,23 +855,25 @@
     // ===============================================
     function goToPaymentDisplay() {
         let amt = parseInt(document.getElementById('topup-amount').value);
-        if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); return; }
+        if(!amt || amt < 5000) { showPopup('warning', 'Xato', "Minimal 5 000 UZS kiriting!"); return; }
         
         document.getElementById('topup-amount').value = ''; 
+        showPopup('loading', 'Kuting...', 'So\'rov yaratilmoqda...');
         
         fetch(`${API_URL}/api/init_topup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, amount: amt })
         }).then(res => res.json()).then(data => {
+            closePopup();
             if(data.status === "success") {
                 pendingTopupAmount = amt; 
                 resumePaymentSession(amt);
             } else {
-                tg.showAlert("❌ " + data.message);
+                showPopup('error', 'Xatolik', data.message);
                 if(data.message.includes("faol")) syncData(); 
             }
-        }).catch(err => { tg.showAlert("🌐 Server xatosi!"); });
+        }).catch(err => { closePopup(); showPopup('error', 'Xato', "Server xatosi!"); });
     }
 
     function resumePaymentSession(amt) {
@@ -858,26 +909,25 @@
 
             if(data.status === "success") {
                 balance = data.new_balance; updateBal(); clearSession(); syncData();
-                tg.showAlert("✅ To'lovingiz muvaffaqiyatli amalga oshirildi, bemalol xaridlarga o'tishingiz mumkin.", () => {
-                    switchNav('main'); 
-                });
+                showPopup('success', 'Muvaffaqiyatli!', `✅ To'lov qabul qilindi!\n\nBemalol xaridlarga o'tishingiz mumkin.`, () => { switchNav('main'); });
             } else {
-                tg.showAlert("⏳ To'lov kutilmoqda. Iltimos, berilgan vaqtda to'lovni amalga oshiring yoki buyurtmani bekor qiling.");
+                showPopup('warning', 'Kutilmoqda', data.message);
             }
         }).catch(err => {
-            btn.innerHTML = origText; btn.style.pointerEvents = "auto"; tg.showAlert("🌐 Server xatosi!");
+            btn.innerHTML = origText; btn.style.pointerEvents = "auto"; showPopup('error', 'Xato', "Tarmoqda xatolik!");
         });
     }
 
     function cancelTopup() {
-        tg.showConfirm("Bekor qilishni tasdiqlaysizmi?", function(ok) {
+        showConfirm("Ushbu to'lov so'rovini bekor qilasizmi?", function(ok) {
             if(ok) {
+                showPopup('loading', 'Kuting...', 'Bekor qilinmoqda...');
                 fetch(`${API_URL}/api/cancel_topup`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId })
                 }).then(res => res.json()).then(data => {
-                    clearSession(); syncData();
-                    switchNav('main'); 
+                    closePopup(); clearSession(); syncData();
+                    showPopup('error', 'Bekor qilindi', "To'lov so'rovingiz bekor qilindi.", () => { switchNav('main'); });
                 });
             }
         });
@@ -892,7 +942,7 @@
             
             if(t <= 0) { 
                 clearInterval(timerInt); d.textContent = "00:00";
-                cancelTopup(); 
+                showPopup('warning', 'Vaqt tugadi', 'Berilgan vaqt tugadi. So\'rov avtomatik bekor qilindi.', () => { cancelTopup(); });
                 return;
             }
             let m = parseInt(t/60,10), s = parseInt(t%60,10);
@@ -904,13 +954,13 @@
     function topupForeign() { window.location.href = `https://t.me/MUSULMANUC?text=` + encodeURIComponent("Chetdan hisobimni to'ldirmoqchi edim karta bering."); }
     function switchH(t) { document.getElementById('tab-h-topup').classList.toggle('active', t === 'topup'); document.getElementById('tab-h-order').classList.toggle('active', t === 'order'); document.getElementById('h-topup-list').style.display = t === 'topup' ? 'block' : 'none'; document.getElementById('h-order-list').style.display = t === 'order' ? 'block' : 'none'; }
     function getRefLink() { return `https://t.me/MUSULMANUCBOT?start=ref_${userId}`; }
-    function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.HapticFeedback.notificationOccurred('success'); }); }
+    function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { showToast("Silka nusxalandi! 📋"); }); }
     function shareRefLink() { let text = encodeURIComponent("Eng arzon PUBG UC! Menga qo'shil va bonus ol:"); let url = encodeURIComponent(getRefLink()); tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`); }
     
-    // KARTA NUSXALASH (Faqat vibratsiya)
+    // KARTA NUSXALASH (Faqat Toast bilan)
     function copyText(txt) { 
         navigator.clipboard.writeText(txt).then(() => { 
-            tg.HapticFeedback.notificationOccurred('success'); 
+            showToast("Karta raqami nusxalandi! 💳");
         }); 
     }
 </script>
