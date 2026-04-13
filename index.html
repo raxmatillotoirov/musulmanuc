@@ -865,7 +865,7 @@
                         closePopup();
                         if(data.status === "success") {
                             balance = data.new_balance; updateBal(); clearCart();
-                            showPopup('success', 'Muvaffaqiyatli!', "Xarid qabul qilindi. UC tez orada tushadi.", () => { switchNav('history'); });
+                            showPopup('success', 'Muvaffaqiyatli!', "Xarid qabul qilindi. UC tez orada tushadi. Kechki soat 01:00 - 10:00 vaqti orasida buyurtmalar biroz kechikishi mumkin! Axir adminlar ham odam!", () => { switchNav('history'); });
                         } else { showPopup('error', 'Xatolik', data.message); }
                     }).catch(err => { closePopup(); showPopup('error', 'Server xatosi', 'Server bilan ulanish uzildi.'); });
                 }
