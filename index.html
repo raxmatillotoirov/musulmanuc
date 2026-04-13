@@ -79,7 +79,9 @@
         .btn-main:active { transform: scale(0.97); opacity: 0.8; }
         .btn-secondary { width: 100%; background: rgba(255,255,255,0.1); color: var(--tg-text); border: none; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 17px; cursor: pointer; transition: 0.1s; }
         .btn-secondary:active { transform: scale(0.97); background: rgba(255,255,255,0.2); }
-
+        /* KATTA SAVATCHA DIZAYNI */
+        .cart-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 99990; padding: 16px; }
+        .cart-modal-card { background: linear-gradient(145deg, #1c1c1e, #121212); border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 420px; border-radius: 28px; padding: 26px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
         /* RASMLI KARTA CSS (PUBG) */
         .game-card { position: relative; width: 100%; height: 160px; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.15s; margin-bottom: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.4); background-color: var(--tg-card); border: 1px solid rgba(255,255,255,0.05);}
         .game-card:active { transform: scale(0.97); }
@@ -419,33 +421,33 @@
         </div>
     </div>
 
-    <div class="custom-popup-bg" id="cart-modal" style="z-index: 100000;">
-        <div class="modal-card" style="background: rgba(28,28,30,0.95); backdrop-filter: blur(20px);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div style="font-size:22px; font-weight:800; color:var(--tg-btn);">Savatcha</div>
-                <div onclick="clearCart()" style="color:var(--danger); font-size:13px; font-weight:700; cursor:pointer; padding:6px 12px; background:rgba(255, 69, 58, 0.1); border-radius:8px;">Bo'shatish 🗑</div>
+    <div class="cart-modal-bg" id="cart-modal">
+        <div class="cart-modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="font-size:24px; font-weight:900; color:#fff;">Savatcha 🛒</div>
+                <div onclick="clearCart()" style="color:var(--danger); font-size:13px; font-weight:700; cursor:pointer; padding:8px 14px; background:rgba(255, 69, 58, 0.15); border-radius:10px; transition: 0.2s;">Bo'shatish 🗑</div>
             </div>
             
-            <div id="cart-items-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px;"></div>
+            <div id="cart-items-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;"></div>
             
-            <div class="cart-summary">
-                <div class="summary-block" style="text-align: left;">
-                    <span class="summary-label">Jami Tushadi</span>
-                    <span class="summary-uc" id="cart-total-uc">0 <span style="font-size: 14px;">UC</span></span>
+            <div style="background: rgba(0,0,0,0.4); border-radius: 16px; padding: 18px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 13px; color: var(--tg-hint); font-weight: 600; text-transform: uppercase;">Jami Tushadi:</span>
+                    <span style="font-weight:900; font-size: 18px; color: #0a84ff;" id="cart-total-uc">0 UC</span>
                 </div>
-                <div class="summary-divider"></div>
-                <div class="summary-block" style="text-align: right;">
-                    <span class="summary-label">Jami To'lov</span>
-                    <span class="summary-price" id="cart-total-price">0 <span style="font-size: 14px;">UZS</span></span>
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 12px;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; color: var(--tg-hint); font-weight: 600; text-transform: uppercase;">Jami To'lov:</span>
+                    <span style="font-weight:900; font-size: 22px; color: var(--gold);" id="cart-total-price">0 UZS</span>
                 </div>
             </div>
             
-            <label style="font-size:14px; color:var(--tg-hint); margin-bottom:8px; display:block; font-weight:600;">O'yinchi ID raqami:</label>
-            <input type="number" id="cart-id-input" class="input-box" placeholder="Barcha mahsulotlar uchun bitta ID">
+            <label style="font-size:14px; color:var(--tg-hint); margin-bottom:10px; display:block; font-weight:600; text-align:left;">O'yinchi ID raqami:</label>
+            <input type="number" id="cart-id-input" class="input-box" placeholder="Masalan: 512345678" style="background: rgba(0,0,0,0.5);">
             
-            <div class="modal-btn-group" style="display:flex; gap:10px;">
-                <button class="btn-secondary" onclick="closeModal('cart-modal')">Yopish</button>
-                <button class="btn-main" onclick="processCheckout()">Xarid qilish</button>
+            <div style="display:flex; gap:12px; margin-top: 10px;">
+                <button class="btn-secondary" style="width: 40%; border: 1px solid rgba(255,255,255,0.1);" onclick="closeModal('cart-modal')">Yopish</button>
+                <button class="btn-main" style="width: 60%; box-shadow: 0 6px 20px rgba(10,132,255,0.4);" onclick="processCheckout()">Xarid qilish</button>
             </div>
         </div>
     </div>
@@ -512,7 +514,7 @@
         </div>
         <div class="card" style="text-align:center; padding:30px 10px;">
             <p style="color:var(--tg-hint); margin:0 0 10px 0; font-size:15px;">Karta raqami (Uzcard/Humo):</p>
-            <h2 style="margin:0 0 15px 0; letter-spacing:1.5px; color:#fff; font-size: 26px;">9860 1606 2621 4508</h2>
+            <h2 style="margin:0 0 15px 0; letter-spacing:1.5px; color:#fff; font-size: 26px;">5614685800120912</h2>
             <button style="background:rgba(255,255,255,0.1); border:none; color:#fff; padding:10px 20px; border-radius:8px; font-size:14px; margin-bottom:24px; font-weight:bold; cursor:pointer;" onclick="copyText('9860160626214508')">Nusxa olish</button>
             <button class="btn-main" onclick="window.location.href='https://t.me/MUSULMANUC'">Chekni Adminga Yuborish</button>
         </div>
