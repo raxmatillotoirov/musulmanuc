@@ -500,7 +500,7 @@
         </div>
         
         <div style="display:flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-            <button class="btn-main" style="background:var(--success);" onclick="triggerPaymentCheck()">To'lov qildim (Tekshirish)</button>
+            <button id="btn-check-pay" class="btn-main" style="background:var(--success);" onclick="triggerPaymentCheck()">To'lov qildim (Tekshirish)</button>
             <button class="btn-secondary" style="background: transparent; border: 1px solid var(--danger); color: var(--danger);" onclick="cancelTopup()">❌ Buyurtmani bekor qilish</button>
         </div>
     </div>
@@ -641,8 +641,8 @@
     </div>
 
     <script>
-    // DIQQAT: SHU YERGA O'ZINGNING CLOUDFLARE YOKI API MANZILINGNI YOZASAN!
-    const API_URL = "https://bright-savannah-reynolds-biological.trycloudflare.com";;
+    // DIQQAT: API MANZILINGIZNI KIRITING
+    const API_URL = "https://bright-savannah-reynolds-biological.trycloudflare.com";
 
     let tg = window.Telegram.WebApp;
     tg.expand();
@@ -653,14 +653,10 @@
     let pendingTopupAmount = 0; 
     let balance = 0;
     
-    // To'lov session ma'lumotlari
     let topupSessionActive = false;
     let sessionEndTime = 0;
 
-    // 1. GET DATA
     const urlParams = new URLSearchParams(window.location.search);
-    balance = parseInt(localStorage.getItem('muc_balance')) || 0; 
-    
     let botUid = urlParams.get('uid'); 
     let userId = botUid || 'Noma\'lum';
     let firstName = 'Foydalanuvchi';
@@ -679,12 +675,8 @@
 
     function updateBal() {
         document.getElementById('user-balance').innerText = balance.toLocaleString().replace(/,/g, ' ') + " UZS";
-        localStorage.setItem('muc_balance', balance);
     }
 
-    // ===============================================
-    // 2. API ORQALI TARIX VA FAOL SESSIYANI TEKSHIRISH
-    // ===============================================
     function syncData() {
         fetch(`${API_URL}/api/sync/${userId}`)
         .then(res => res.json())
@@ -693,7 +685,11 @@
             updateBal();
             renderServerHistory(data.topups, data.orders);
             
-            // AGAR FAOL TO'LOV KUTILAYOTGAN BO'LSA
+            if(document.getElementById('ref-count-display')) {
+                document.getElementById('ref-count-display').innerText = data.ref_count || 0;
+                document.getElementById('ref-cashback-display').innerText = (data.total_cashback || 0) + " UZS";
+            }
+            
             if(data.active_topup) {
                 pendingTopupAmount = data.active_topup.amount;
                 resumePaymentSession(pendingTopupAmount);
@@ -703,7 +699,6 @@
     syncData(); 
 
     function renderServerHistory(topups, orders) {
-        // Oldingi tarix funksiyasi o'zgarishsiz...
         const getStatusTxt = (s, isTopup) => {
             if(s === 'waiting') return '<span style="color:var(--gold);">Jarayonda ⏳</span>';
             if(s === 'completed') return '<span style="color:var(--success);">UC tushirildi ✅</span>';
@@ -719,8 +714,7 @@
                     <span style="color:var(--success); font-weight:900; font-size: 16px;">+${i.amount.toLocaleString()} UZS</span>
                 </div>
                 <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, true)}</div>
-            </div>
-        `).join('');
+            </div>`).join('');
 
         let oHtml = orders.map(i => `
             <div class="card" style="padding:15px; margin-bottom:10px;">
@@ -729,33 +723,28 @@
                     <span style="color:var(--tg-text); font-weight:900; font-size: 16px;">-${i.amount.toLocaleString()} UZS</span>
                 </div>
                 <div style="font-size:14px; font-weight: 600;">Holat: ${getStatusTxt(i.status, false)}</div>
-            </div>
-        `).join('');
+            </div>`).join('');
 
         document.getElementById('h-topup-list').innerHTML = tHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">To'lovlar yo'q</div>`;
         document.getElementById('h-order-list').innerHTML = oHtml || `<div class="card" style="text-align:center; color:var(--tg-hint);">Buyurtmalar yo'q</div>`;
     }
 
-    // ===============================================
-    // 3. NAVIGATSIYA
-    // ===============================================
     function openView(id) {
         document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(id !== 'main-view' && id !== 'payment-view') { historyStack.push(id); tg.BackButton.show(); }
-        if(id === 'payment-view') tg.BackButton.hide(); // To'lov oynasidan orqaga qaytib bo'lmaydi!
+        if(id === 'payment-view' || id === 'main-view') tg.BackButton.hide();
     }
 
     function switchNav(tabId) {
-        // Agar faol sessiya bo'lsa, boshqa sahifaga o'tkazmaydi!
         if(topupSessionActive && tabId !== 'payment') {
-            tg.showAlert("Sizda tugallanmagan to'lov so'rovi bor. Iltimos uni yakunlang yoki bekor qiling.");
+            tg.showAlert("Sizda tugallanmagan to'lov so'rovi bor. Iltimos, uni yakunlang yoki bekor qiling.");
             return;
         }
-        
         openView(tabId + '-view');
         document.querySelectorAll('.nav-icon-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('nav-' + tabId).classList.add('active');
+        let targetBtn = document.getElementById('nav-' + tabId);
+        if(targetBtn) targetBtn.classList.add('active');
         historyStack = [tabId + '-view']; tg.BackButton.hide();
         syncData(); 
     }
@@ -777,10 +766,6 @@
         document.getElementById('pubg-other-content').style.display = t === 'other' ? 'flex' : 'none';
     }
 
-    // ===============================================
-    // 4. SAVATCHA (CART) va XARID
-    // ===============================================
-    // (Cart funksiyalari o'zgarishsiz, yuqoridagi html koddan qoladi... addToCart, updateCartUI, changeQty, clearCart, openCartModal)
     function addToCart(name, price, ucAmount) {
         let existing = cart.find(item => item.name === name);
         if (existing) { existing.qty++; } else { cart.push({ name: name, price: price, uc: ucAmount, qty: 1 }); }
@@ -798,8 +783,7 @@
         document.getElementById('cart-total-price').innerHTML = totalPrice.toLocaleString() + " <span style='font-size: 14px;'>UZS</span>";
         document.getElementById('cart-total-uc').innerHTML = totalUC.toLocaleString() + " <span style='font-size: 14px;'>UC</span>";
         
-        if (totalCount > 0) fab.classList.add('show');
-        else fab.classList.remove('show');
+        if (totalCount > 0) fab.classList.add('show'); else fab.classList.remove('show');
 
         let list = document.getElementById('cart-items-list');
         list.innerHTML = "";
@@ -824,7 +808,7 @@
     function clearCart() { cart = []; updateCartUI(); closeModal('cart-modal'); tg.showAlert("Savatcha bo'shatildi! 🗑"); }
     function openCartModal() { document.getElementById('cart-modal').style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    function goToTopup() { closeModal('low-bal-modal'); switchNav('topup'); }
+    function goToTopup() { closeModal('low-bal-modal'); switchNav('main'); openView('methods-view'); }
 
     function processCheckout() {
         let id = document.getElementById('cart-id-input').value;
@@ -839,63 +823,43 @@
         } else {
             tg.showConfirm("Xaridni tasdiqlaysizmi? Balansingizdan pul yechiladi.", function(ok) {
                 if (ok) {
-                    tg.showAlert("⏳ Kutilmoqda...");
-                    
                     fetch(`${API_URL}/api/buy`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            username: uUsername,
-                            pubg_id: id,
-                            amount: totalPrice,
-                            item: JSON.stringify(cart)
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
+                        body: JSON.stringify({ user_id: userId, username: uUsername, pubg_id: id, amount: totalPrice, item: JSON.stringify(cart) })
+                    }).then(res => res.json()).then(data => {
                         if(data.status === "success") {
-                            balance = data.new_balance;
-                            updateBal();
-                            clearCart();
-                            tg.showAlert("✅ Xarid muvaffaqiyatli! UC tez orada tushadi.");
-                            switchNav('history'); 
-                        } else {
-                            tg.showAlert("❌ Xatolik: " + data.message);
-                        }
-                    })
-                    .catch(err => { tg.showAlert("🌐 Server bilan aloqa uzildi!"); });
+                            balance = data.new_balance; updateBal(); clearCart();
+                            tg.showAlert("✅ Xarid muvaffaqiyatli! UC tez orada tushadi.", () => { switchNav('history'); });
+                        } else { tg.showAlert("❌ Xatolik: " + data.message); }
+                    }).catch(err => { tg.showAlert("🌐 Server bilan aloqa uzildi!"); });
                 }
             });
         }
     }
 
     // ===============================================
-    // 5. TO'LOV MANTIQI (YANGILANGAN QAT'IY MANTIQ)
+    // 5. TO'LOV MANTIQI
     // ===============================================
     function goToPaymentDisplay() {
         let amt = parseInt(document.getElementById('topup-amount').value);
         if(!amt || amt < 5000) { tg.showAlert("Minimal 5 000 UZS kiriting!"); return; }
         
-        // Agar faol so'rov bo'lmasa, serverga so'rov yuboramiz
-        tg.showAlert("⏳ So'rov yaratilmoqda...");
+        document.getElementById('topup-amount').value = ''; 
         
         fetch(`${API_URL}/api/init_topup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, amount: amt })
-        })
-        .then(res => res.json())
-        .then(data => {
+        }).then(res => res.json()).then(data => {
             if(data.status === "success") {
                 pendingTopupAmount = amt; 
                 resumePaymentSession(amt);
             } else {
                 tg.showAlert("❌ " + data.message);
-                if(data.message.includes("faol")) syncData(); // Faolini tortib keladi
+                if(data.message.includes("faol")) syncData(); 
             }
-        })
-        .catch(err => { tg.showAlert("🌐 Server xatosi!"); });
+        }).catch(err => { tg.showAlert("🌐 Server xatosi!"); });
     }
 
     function resumePaymentSession(amt) {
@@ -903,58 +867,54 @@
         topupSessionActive = true;
         openView('payment-view');
         
-        // Localstorage'dan vaqtni o'qiymiz, yo'q bo'lsa yangi 5 daqiqa beramiz
         let savedEndTime = localStorage.getItem('muc_timer_end');
         let now = Math.floor(Date.now() / 1000);
         
         if(savedEndTime && savedEndTime > now) {
             sessionEndTime = savedEndTime;
         } else {
-            sessionEndTime = now + 300; // +5 min
+            sessionEndTime = now + 300; 
             localStorage.setItem('muc_timer_end', sessionEndTime);
         }
-        
         startTimer();
     }
 
-    // Qat'iy tekshirish
     function triggerPaymentCheck() {
-        tg.showAlert(`⏳ ${pendingTopupAmount.toLocaleString()} so'm tekshirilmoqda...`);
+        let btn = document.getElementById('btn-check-pay');
+        let origText = btn.innerHTML;
+        btn.innerHTML = "⏳ Tekshirilmoqda...";
+        btn.style.pointerEvents = "none";
         
         fetch(`${API_URL}/api/topup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, amount: pendingTopupAmount })
-        })
-        .then(res => res.json())
-        .then(data => {
+        }).then(res => res.json()).then(data => {
+            btn.innerHTML = origText;
+            btn.style.pointerEvents = "auto";
+
             if(data.status === "success") {
-                balance = data.new_balance;
-                updateBal();
-                clearSession();
-                tg.showAlert("✅ " + data.message);
-                switchNav('history');
+                balance = data.new_balance; updateBal(); clearSession(); syncData();
+                tg.showAlert("✅ To'lovingiz muvaffaqiyatli amalga oshirildi, bemalol xaridlarga o'tishingiz mumkin.", () => {
+                    switchNav('main'); 
+                });
             } else {
-                tg.showAlert("⏳ " + data.message);
+                tg.showAlert("⏳ To'lov kutilmoqda. Iltimos, berilgan vaqtda to'lovni amalga oshiring yoki buyurtmani bekor qiling.");
             }
-        })
-        .catch(err => { tg.showAlert("🌐 Server xatosi!"); });
+        }).catch(err => {
+            btn.innerHTML = origText; btn.style.pointerEvents = "auto"; tg.showAlert("🌐 Server xatosi!");
+        });
     }
 
     function cancelTopup() {
-        tg.showConfirm("So'rovni bekor qilasizmi?", function(ok) {
+        tg.showConfirm("Bekor qilishni tasdiqlaysizmi?", function(ok) {
             if(ok) {
                 fetch(`${API_URL}/api/cancel_topup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    clearSession();
-                    tg.showAlert("❌ To'lov so'rovi bekor qilindi.");
-                    document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
-                    document.getElementById('main-view').classList.add('active');
+                }).then(res => res.json()).then(data => {
+                    clearSession(); syncData();
+                    tg.showAlert("❌ Buyurtma bekor qilindi.", () => { switchNav('main'); });
                 });
             }
         });
@@ -963,35 +923,31 @@
     function startTimer() {
         clearInterval(timerInt);
         let d = document.getElementById('timer-display');
-        
         timerInt = setInterval(() => {
             let now = Math.floor(Date.now() / 1000);
             let t = sessionEndTime - now;
             
             if(t <= 0) { 
-                clearInterval(timerInt); 
-                d.textContent = "00:00";
-                tg.showAlert("⏳ Vaqt tugadi! So'rov avtomatik bekor qilinadi.", () => {
-                    cancelTopup(); // Vaqt tugasa ham backendga bekor qilindi deb yuboramiz
-                });
+                clearInterval(timerInt); d.textContent = "00:00";
+                tg.showAlert("⏳ Vaqt tugadi! So'rov avtomatik bekor qilinadi.", () => { cancelTopup(); });
                 return;
             }
-            
             let m = parseInt(t/60,10), s = parseInt(t%60,10);
             d.textContent = (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
         }, 1000);
     }
 
-    function clearSession() {
-        clearInterval(timerInt);
-        topupSessionActive = false;
-        localStorage.removeItem('muc_timer_end');
-    }
-
+    function clearSession() { clearInterval(timerInt); topupSessionActive = false; localStorage.removeItem('muc_timer_end'); }
     function topupForeign() { window.location.href = `https://t.me/MUSULMANUC?text=` + encodeURIComponent("Chetdan hisobimni to'ldirmoqchi edim karta bering."); }
     function switchH(t) { document.getElementById('tab-h-topup').classList.toggle('active', t === 'topup'); document.getElementById('tab-h-order').classList.toggle('active', t === 'order'); document.getElementById('h-topup-list').style.display = t === 'topup' ? 'block' : 'none'; document.getElementById('h-order-list').style.display = t === 'order' ? 'block' : 'none'; }
     function getRefLink() { return `https://t.me/MUSULMANUCBOT?start=ref_${userId}`; }
     function copyRefLink() { navigator.clipboard.writeText(getRefLink()).then(() => { tg.showAlert("Referal silka nusxalandi!\nDo'stlaringizga yuboring va keshbek ishlang."); }); }
-    function shareRefLink() { let text = encodeURIComponent("Eng arzon PUBG UC va Prime xizmatlari! Menga qo'shil va bonus ol:"); let url = encodeURIComponent(getRefLink()); tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`); }
-    function copyText(txt) { navigator.clipboard.writeText(txt).then(() => tg.showAlert("Nusxalandi!")); }
+    function shareRefLink() { let text = encodeURIComponent("Eng arzon PUBG UC! Menga qo'shil va bonus ol:"); let url = encodeURIComponent(getRefLink()); tg.openTelegramLink(`https://t.me/share/url?url=${url}&text=${text}`); }
+    
+    // KARTA NUSXALASH
+    function copyText(txt) { 
+        navigator.clipboard.writeText(txt).then(() => { 
+            tg.HapticFeedback.notificationOccurred('success'); 
+        }); 
+    }
 </script>
